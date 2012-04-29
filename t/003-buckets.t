@@ -9,6 +9,6 @@ use Test::Data::Riak;
 skip_unless_riak;
 
 my $riak = Data::Riak::HTTP->new;
-is($riak->buckets, 1, 'Riak server to test against');
+isa_ok($riak->buckets, 'Data::Riak::HTTP::Response', 'Riak server to test against');
 
 done_testing;

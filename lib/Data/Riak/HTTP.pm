@@ -13,6 +13,7 @@ use Scalar::Util qw/blessed/;
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
 
+use Data::Riak::Types qw/HTTPResponse/;
 
 use Data::Dump;
 
@@ -60,8 +61,9 @@ has 'timeout' => (
 sub ping {
     my $self = shift;
     my $response = $self->raw('stats');
-    unless($response->status_code eq '200') {
-        die 'Riak server not answering.';
+    unless($response->code eq '200') {
+        # don't die, just return 'false'
+        return 0; 
     }
     return 1;
 }
@@ -110,33 +112,39 @@ sub linkwalk {
         method => 'GET',
         uri => $request_str
     });
-    $self->_send($request);
+
+    return $self->_send($request);
 }
 
 sub _send {
     my ($self, $request) = @_;
 
     my $uri = sprintf('http://%s:%s/riak/%s', $self->host, $self->port, $request->uri);
+    my $headers = HTTP::Headers->new(
+        'Content-Type' => $request->content_type,
+    );
+
+    if(my $links = $request->links) {
+        my $fixed_links = $request->links->to_string;
+        $fixed_links =~ s/###/"/g;
+        $headers->header('Link' => $fixed_links);
+    }
+
     my $http_request = HTTP::Request->new(
         $request->method => $uri,
-        HTTP::Headers->new('Content-Type' => $request->content_type),
+        $headers,
         $request->data
     );
 
-    my $links = join ', ', @{$request->links};
-    if($links) {
-        $http_request->header('Link' => $links);
-    }
-
-    ddx($http_request);
     my $ua = LWP::UserAgent->new(timeout => $self->timeout);
     my $http_response = $ua->request($http_request);
-    #ddx($http_response);
     my $response = Data::Riak::HTTP::Response->new({
-        status_code => $http_response->code,
-        content => $http_response->content
+        http_response => $http_response
     });
-    #ddx($response);
+
+    if($http_response->code eq '400') {
+        die 'bad request, probably link malformat';
+    }
     return $response;
 }
 

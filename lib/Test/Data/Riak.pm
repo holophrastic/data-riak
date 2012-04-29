@@ -3,7 +3,6 @@ package Test::Data::Riak;
 use strict;
 use warnings;
 
-use Try::Tiny;
 use Test::More;
 
 use Sub::Exporter;
@@ -20,14 +19,11 @@ Sub::Exporter::setup_exporter({
 });
 
 sub skip_unless_riak {
-    try {
-		# This can be overridden via env vars
-        Data::Riak::HTTP->new->ping;
-    } catch {
-        warn $_;
+    my $up = Data::Riak::HTTP->new->ping;
+    unless($up) {
 		warn 'Riak did not answer, skipping tests';
         done_testing;
         exit;
     };
-    1;
+    return $up;
 }

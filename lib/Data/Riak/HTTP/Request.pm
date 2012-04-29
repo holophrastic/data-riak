@@ -5,6 +5,11 @@ use warnings;
 
 use Moose;
 
+use HTTP::Headers::ActionPack;
+use HTTP::Headers::ActionPack::LinkList;
+
+use Data::Riak::Types qw/HTTPHeadersActionPackLinkList/;
+
 has method => (
     is => 'ro',
     isa => 'Str',
@@ -25,10 +30,9 @@ has data => (
 
 has links => (
     is => 'ro',
-    isa => 'ArrayRef[Str]',
+    isa => 'HTTPHeadersActionPackLinkList',
     default => sub { {
-        my $array_ref = [];
-        return $array_ref;
+        return HTTP::Headers::ActionPack::LinkList->new;
     } }
 );
 

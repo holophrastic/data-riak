@@ -3,7 +3,11 @@ package Data::Riak::HTTP::Bucket;
 use strict;
 use warnings;
 
-use Data::Dump;
+use HTTP::Headers::ActionPack;
+use HTTP::Headers::ActionPack::Link;
+use HTTP::Headers::ActionPack::LinkList;
+
+use Scalar::Util qw/blessed/;
 
 use Moose;
 
@@ -24,13 +28,29 @@ has name => (
 sub add {
     my ($self, $key, $value, $links) = @_;
 
-    my $processed_links = [];
+    my $pack = HTTP::Headers::ActionPack::LinkList->new;
     if($links) {
         foreach my $link (@{$links}) {
-            push @{$processed_links}, sprintf('</riak/%s/%s>; riaktag="%s"',
-                $link->{bucket} || $self->name,
-                $link->{link_target},
-                $link->{link_type});
+            if(blessed $link && $link->isa('HTTP::Headers::ActionPack::Link')) {
+                $pack->add($link);
+            } else {
+                my $link_url = $link->{url} || sprintf('</riak/%s/%s>', $link->{bucket} || $self->name, $link->{target});
+                #use Data::Dump;
+               # ddx($link);
+               my $type = $link->{type};
+               $type =~ s/ /%20/g;
+                my $created_link = HTTP::Headers::ActionPack::Link->new($link_url => (
+                    # this is dumb
+                    riaktag =>  sprintf('###%s###', $type)
+                ));
+                
+               #my $created_link = HTTP::Headers::ActionPack::Link->new_from_string(
+               #    sprintf('%s; riaktag="%s"', $link_url, $type)
+               #);
+                #ddx($created_link);
+               # ddx($created_link->to_string);
+                $pack->add($created_link);
+            }
         }
     }
 
@@ -38,7 +58,7 @@ sub add {
         method => 'PUT',
         uri => sprintf('%s/%s', $self->name, $key),
         data => $value,
-        links => $processed_links
+        links => $pack
     });
     return $self->riak->send($request);
 }
@@ -58,7 +78,12 @@ sub get {
         method => 'GET',
         uri => sprintf('%s/%s', $self->name, $key)
     });
-    return $self->riak->send($request);
+    my $response = $self->riak->send($request);
+    if($response->is_error) {
+        # don't just die here; return the busted object and let the caller handle it
+        return Data::Riak::HTTP::Result->new({ http_message => $response->http_response });
+    }
+    return $response->result;
 }
 
 sub linkwalk {
