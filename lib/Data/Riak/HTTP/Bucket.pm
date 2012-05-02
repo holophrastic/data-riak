@@ -7,13 +7,15 @@ use HTTP::Headers::ActionPack;
 use HTTP::Headers::ActionPack::Link;
 use HTTP::Headers::ActionPack::LinkList;
 
+use URL::Encode qw/url_encode/;
+
 use Scalar::Util qw/blessed/;
 
 use Moose;
 
 has riak => (
     is => 'ro',
-    isa => 'Data::Riak::HTTP',
+    isa => 'Riak',
     default => sub { {
         return Data::Riak::HTTP->new;
     } }
@@ -34,21 +36,12 @@ sub add {
             if(blessed $link && $link->isa('HTTP::Headers::ActionPack::Link')) {
                 $pack->add($link);
             } else {
-                my $link_url = $link->{url} || sprintf('</riak/%s/%s>', $link->{bucket} || $self->name, $link->{target});
-                #use Data::Dump;
-               # ddx($link);
-               my $type = $link->{type};
-               $type =~ s/ /%20/g;
-                my $created_link = HTTP::Headers::ActionPack::Link->new($link_url => (
-                    # this is dumb
-                    riaktag =>  sprintf('###%s###', $type)
-                ));
-                
-               #my $created_link = HTTP::Headers::ActionPack::Link->new_from_string(
-               #    sprintf('%s; riaktag="%s"', $link_url, $type)
-               #);
-                #ddx($created_link);
-               # ddx($created_link->to_string);
+                my $link_url = $link->{url} || sprintf('/riak/%s/%s', $link->{bucket} || $self->name, $link->{target});
+                my $created_link = HTTP::Headers::ActionPack::Link->new(
+                    $link_url => (
+                        riaktag => url_encode($link->{type})
+                    )
+                );
                 $pack->add($created_link);
             }
         }

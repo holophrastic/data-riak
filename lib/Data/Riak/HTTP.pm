@@ -125,9 +125,7 @@ sub _send {
     );
 
     if(my $links = $request->links) {
-        my $fixed_links = $request->links->to_string;
-        $fixed_links =~ s/###/"/g;
-        $headers->header('Link' => $fixed_links);
+        $headers->header('Link' => $request->links);
     }
 
     my $http_request = HTTP::Request->new(
@@ -142,9 +140,6 @@ sub _send {
         http_response => $http_response
     });
 
-    if($http_response->code eq '400') {
-        die 'bad request, probably link malformat';
-    }
     return $response;
 }
 
