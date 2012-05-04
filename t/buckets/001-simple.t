@@ -50,14 +50,34 @@ is($bar->value, 'value of bar', 'correct value for bar');
 is($baz->value, 'value of baz', 'correct value for baz');
 dies_ok(sub { $baz->parts }, 'Call to parts from a non-multipart message fails');
 
-my $walk_foo = $bucket->linkwalk('foo', [[ 'not a buddy', 1 ]]);
-ddx($walk_foo->parts);
+my $walk_foo = $bucket->linkwalk('foo', [[ 'not a buddy', '_' ]]);
 my $parts = $walk_foo->parts;
 is(scalar @{$parts}, 2, 'Got two parts back from linkwalking foo');
 dies_ok(sub { $walk_foo->result }, 'Call to result from a multipart message fails');
+
 my $resultset = $walk_foo->results;
-ddx("arf");
 isa_ok($resultset, 'Data::Riak::HTTP::ResultSet');
 is(scalar @{$resultset->results}, 2, 'Got two Riak::Results back from linkwalking foo');
 
+my $deep_walk_foo = $bucket->linkwalk('bar', [ [ 'buddy', '_' ], [ $bucket_name, 'not a buddy', '_' ] ]);
+my $dw_resultset = $deep_walk_foo->results;
+my $dw_results = $dw_resultset->results;
+is(scalar @{$dw_results}, 2, 'Got two Riak::Results back from linkwalking bar');
+
+my $first_dw = shift @{$dw_results};
+my $second_dw = shift @{$dw_results};
+
+# Have to if this because we can't sort the results
+if($first_dw->value eq 'value of bar') {
+    is($second_dw->value, 'value of baz', 'Both resultset entries were present');
+} elsif($first_dw->value eq 'value of baz') {
+    is($second_dw->value, 'value of bar', 'Both resultset entries were present');
+} else {
+    die 'Did not get the right results from the deep linkwalk';
+}
+
 done_testing;
+
+
+
+

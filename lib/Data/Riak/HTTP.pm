@@ -3,12 +3,16 @@ package Data::Riak::HTTP;
 use Moose;
 with 'Data::Riak';
 
+# ABSTRACT: An interface to a Riak server, using its HTTP (REST) interface
+
 use LWP;
 use HTTP::Headers;
 use HTTP::Response;
 use HTTP::Request;
 
 use Scalar::Util qw/blessed/;
+
+use Data::Riak::MapReduce;
 
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
@@ -17,20 +21,14 @@ use Data::Riak::Types qw/HTTPResponse/;
 
 use Data::Dump;
 
-# ABSTRACT: An interface to a Riak server, using its HTTP (REST) interface.
+=attr host
 
-
-=head1 DESCRIPTION
-
-=head1 SYNOPSIS
-
-=begin :prelude
-
-=end :prelude
+The host the Riak server is on. Can be set via the environment variable
+DATA_RIAK_HTTP_HOST, and defaults to 127.0.0.1.
 
 =cut
 
-has 'host' => (
+has host => (
     is => 'ro',
     isa => 'Str',
     default => sub { {
@@ -39,7 +37,14 @@ has 'host' => (
     } }
 );
 
-has 'port' => (
+=attr port
+
+The port of the host that the riak server is on. Can be set via the environment
+variable DATA_RIAK_HTTP_PORT, and defaults to 8098.
+
+=cut
+
+has port => (
     is => 'ro',
     isa => 'Int',
     default => sub { {
@@ -48,7 +53,14 @@ has 'port' => (
     } }
 );
 
-has 'timeout' => (
+=attr timeout
+
+The maximum value (in seconds) that a request can go before timing out. Can be set
+via the environment variable DATA_RIAK_HTTP_TIMEOUT, and defaults to 15.
+
+=cut
+
+has timeout => (
     is => 'ro',
     isa => 'Int',
     default => sub { {
@@ -57,27 +69,43 @@ has 'timeout' => (
     } }
 );
 
+=method ping
+
+Tests to see if the specified Riak server is answering. Returns 0 for no, 1 for yes.
+
+=cut
 
 sub ping {
     my $self = shift;
     my $response = $self->raw('stats');
-    unless($response->code eq '200') {
-        # don't die, just return 'false'
-        return 0; 
-    }
+    return 0 unless($response->code eq '200');
     return 1;
 }
+
+=method raw ($uri, $method)
+
+Send a URL to the riak server, unchanged. $method defaults to GET.
+
+=cut
 
 sub raw {
     my ($self, $uri, $method) = @_;
     $method ||= "GET";
     my $request = Data::Riak::HTTP::Request->new({
         uri => $uri,
-        method => $method
+        method => $method,
+        namespace => ''
     });
     my $response = $self->_send($request);
     return $response;
 }
+
+=method send ($request)
+
+Send a Data::Riak::HTTP::Request to the server. If you pass in a hashref, it will
+create the Request object for you on the fly.
+
+=cut
 
 sub send {
     my ($self, $request) = @_;
@@ -88,9 +116,27 @@ sub send {
     return $response;
 }
 
+=method buckets
+
+Get the list of buckets. This is NOT RECOMMENDED for production systems, as Riak
+has to essentially walk the entire database. Here purely as a tool for debugging
+and convenience.
+
+=cut
+
 sub buckets {
     my $self = shift;
-    return $self->raw('buckets?buckets=true');
+    return $self->raw('riak/buckets?buckets=true');
+}
+
+# convenience method
+sub mapreduce {
+    my ($self, $args) = @_;
+    my $config = $args->{config};
+    my $query = $args->{query};
+
+    my $mr = Data::Riak::MapReduce->new($config);
+    return $mr->mapreduce($query);
 }
 
 sub linkwalk {
@@ -119,7 +165,7 @@ sub linkwalk {
 sub _send {
     my ($self, $request) = @_;
 
-    my $uri = sprintf('http://%s:%s/riak/%s', $self->host, $self->port, $request->uri);
+    my $uri = sprintf('http://%s:%s/%s/%s', $self->host, $self->port, $request->namespace, $request->uri);
     my $headers = HTTP::Headers->new(
         'Content-Type' => $request->content_type,
     );

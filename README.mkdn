@@ -1,16 +1,10 @@
-package Data::Riak;
+# DESCRIPTION
 
-use Moose::Role;
-
-# ABSTRACT: An interface to a Riak server.
-
-=head1 DESCRIPTION
-
-Data::Riak is a simple interface to a Riak server. It is not as complete as L<Net::Riak>,
+Data::Riak is a simple interface to a Riak server. It is not as complete as [Net::Riak](http://search.cpan.org/perldoc?Net::Riak),
 nor does it aim to be; instead, it attempts to make the simple operations very simple,
 while still allowing you to do complicated tasks.
 
-=head1 SYNOPSIS
+# SYNOPSIS
 
     my $riak = Data::Riak::HTTP->new({
         host => 'riak.example.com',
@@ -35,9 +29,7 @@ while still allowing you to do complicated tasks.
     # The HTTP status code, 200 on a successful GET.
     my $code = $foo->code;
 
-=begin :prelude
-
-=head1 LINKWALKING
+# LINKWALKING
 
 One of Riak's notable features is the ability to easily "linkwalk", or traverse
 relationships between objects to return relevant resultsets. The most obvious use
@@ -67,24 +59,3 @@ great potential, and it's the one thing we tried to make really simple with Data
     });
 
 The bucket passed in on the riak object's linkwalk is the bucket the original target is in, and is used as a default if you only pass two options in the params lists.
-
-=cut
-
-=end :prelude
-
-=cut
-
-requires 'send';
-requires 'linkwalk';
-
-=begin :postlude
-
-=end :postlude
-
-=cut
-
-no Moose::Role;
-
-1;
-
-__END__
