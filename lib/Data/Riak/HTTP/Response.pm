@@ -63,7 +63,7 @@ sub is_error {
     my $self = shift;
 
     # simple case for now
-    if($self->code eq '404') {
+    if($self->code =~  /^(4|5)/) {
         return 1;
     }
     return 0;
