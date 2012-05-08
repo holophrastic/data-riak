@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Data::Dump;
-use Digest::MD5 qw/md5_hex/;
 
 use Test::Exception;
 use Test::More;
@@ -16,7 +15,7 @@ use Data::Riak::HTTP::Bucket;
 skip_unless_riak;
 
 my $riak = Data::Riak::HTTP->new;
-#my $bucket_name = md5_hex(scalar localtime);
+#my $bucket_name = create_test_bucket_name;
 
 #my $bucket = Data::Riak::HTTP::Bucket->new({
 #    name => $bucket_name,
@@ -35,7 +34,7 @@ my $riak = Data::Riak::HTTP->new;
 
 # Implement the example from the Riak docs.
 
-my $bucket_name = md5_hex(scalar localtime);
+my $bucket_name = create_test_bucket_name;
 
 my $bucket = Data::Riak::HTTP::Bucket->new({
     name => $bucket_name,

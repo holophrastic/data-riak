@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Digest::MD5 qw/md5_hex/;
 
 use Sub::Exporter;
 
@@ -19,6 +20,10 @@ Sub::Exporter::setup_exporter({
     exports => \@exports,
     groups  => { default => \@exports }
 });
+
+sub create_test_bucket_name {
+    'data-riak-test-' . md5_hex(scalar localtime)
+}
 
 sub skip_unless_riak {
     my $up = Data::Riak::HTTP->new->ping;
