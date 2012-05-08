@@ -73,7 +73,7 @@ Tests to see if the specified Riak server is answering. Returns 0 for no, 1 for 
 
 sub ping {
     my $self = shift;
-    my $response = $self->raw('stats');
+    my $response = $self->raw('ping');
     return 0 unless($response->code eq '200');
     return 1;
 }
