@@ -8,17 +8,14 @@ use HTTP::Headers::ActionPack::Link;
 use HTTP::Headers::ActionPack::LinkList;
 
 use URL::Encode qw/url_encode/;
-
-use Scalar::Util qw/blessed/;
+use JSON::XS qw/decode_json/;
 
 use Moose;
 
 has riak => (
     is => 'ro',
-    isa => 'Riak',
-    default => sub { {
-        return Data::Riak::HTTP->new;
-    } }
+    isa => 'Data::Riak::HTTP',
+    required => 1
 );
 
 has name => (
@@ -36,7 +33,7 @@ sub add {
             if(blessed $link && $link->isa('HTTP::Headers::ActionPack::Link')) {
                 $pack->add($link);
             } else {
-                my $link_url = $link->{url} || sprintf('/riak/%s/%s', $link->{bucket} || $self->name, $link->{target});
+                my $link_url = $link->{url} || sprintf('/buckets/%s/keys/%s', $link->{bucket} || $self->name, $link->{target});
                 my $created_link = HTTP::Headers::ActionPack::Link->new(
                     $link_url => (
                         riaktag => url_encode($link->{type})
@@ -49,7 +46,7 @@ sub add {
 
     my $request = Data::Riak::HTTP::Request->new({
         method => 'PUT',
-        uri => sprintf('%s/%s', $self->name, $key),
+        uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
         data => $value,
         links => $pack
     });
@@ -60,7 +57,7 @@ sub remove {
     my ($self, $key) = @_;
     my $request = Data::Riak::HTTP::Request->new({
         method => 'DELETE',
-        uri => sprintf('%s/%s', $self->name, $key)
+        uri => sprintf('buckets/%s/keys/%s', $self->name, $key)
     });
     return $self->riak->send($request);
 }
@@ -69,14 +66,44 @@ sub get {
     my ($self, $key) = @_;
     my $request = Data::Riak::HTTP::Request->new({
         method => 'GET',
-        uri => sprintf('%s/%s', $self->name, $key)
+        uri => sprintf('buckets/%s/keys/%s', $self->name, $key)
     });
     my $response = $self->riak->send($request);
     if($response->is_error) {
         # don't just die here; return the busted object and let the caller handle it
-        return Data::Riak::HTTP::Result->new({ http_message => $response->http_response });
+        return Data::Riak::HTTP::Result->new({
+            riak => $self->riak,
+            http_message => $response->http_response
+        });
     }
     return $response->result;
+}
+
+sub list_keys {
+    my $self = shift;
+    my $request = Data::Riak::HTTP::Request->new({
+        method => 'GET',
+        uri => sprintf('buckets/%s/keys?keys=true', $self->name)
+    });
+
+    my $response = $self->riak->send($request);
+    if($response->is_error) {
+        # don't just die here; return the busted object and let the caller handle it
+        return Data::Riak::HTTP::Result->new({
+            riak => $self->riak,
+            http_message => $response->http_response
+        });
+    }
+    return decode_json( $response->result->value )->{'keys'};
+}
+
+sub remove_all {
+    my $self = shift;
+    my $keys = $self->list_keys;
+    return unless ref $keys eq 'ARRAY' && @$keys;
+    foreach my $key ( @$keys ) {
+        $self->remove( $key );
+    }
 }
 
 sub linkwalk {

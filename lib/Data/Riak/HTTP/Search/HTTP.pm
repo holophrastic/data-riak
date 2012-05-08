@@ -5,16 +5,12 @@ use warnings;
 
 use URL::Encode qw/url_encode/;
 
-use Scalar::Util qw/blessed/;
-
 use Moose;
 
 has riak => (
     is => 'ro',
-    isa => 'Riak',
-    default => sub { {
-        return Data::Riak::HTTP->new;
-    } }
+    isa => 'Data::Riak::HTTP',
+    required => 1
 );
 
 sub search {

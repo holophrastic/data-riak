@@ -10,14 +10,11 @@ use HTTP::Headers;
 use HTTP::Response;
 use HTTP::Request;
 
-use Scalar::Util qw/blessed/;
-
 use Data::Riak::MapReduce;
 
+use Data::Riak::HTTP::Bucket;
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
-
-use Data::Riak::Types qw/HTTPResponse/;
 
 use Data::Dump;
 
@@ -77,7 +74,7 @@ Tests to see if the specified Riak server is answering. Returns 0 for no, 1 for 
 
 sub ping {
     my $self = shift;
-    my $response = $self->raw('stats');
+    my $response = $self->raw('ping');
     return 0 unless($response->code eq '200');
     return 1;
 }
@@ -93,8 +90,7 @@ sub raw {
     $method ||= "GET";
     my $request = Data::Riak::HTTP::Request->new({
         uri => $uri,
-        method => $method,
-        namespace => ''
+        method => $method
     });
     my $response = $self->_send($request);
     return $response;
@@ -126,7 +122,15 @@ and convenience.
 
 sub buckets {
     my $self = shift;
-    return $self->raw('riak/buckets?buckets=true');
+    return $self->raw('/buckets?buckets=true');
+}
+
+sub bucket {
+    my ($self, $bucket_name) = @_;
+    return Data::Riak::HTTP::Bucket->new({
+        riak => $self,
+        name => $bucket_name
+    })
 }
 
 # convenience method
@@ -134,6 +138,8 @@ sub mapreduce {
     my ($self, $args) = @_;
     my $config = $args->{config};
     my $query = $args->{query};
+
+    $config->{riak} ||= $self;
 
     my $mr = Data::Riak::MapReduce->new($config);
     return $mr->mapreduce($query);
@@ -144,7 +150,7 @@ sub linkwalk {
     my $object = $args->{object} || die 'You must have an object to linkwalk';
     my $bucket = $args->{bucket} || die 'You must have a bucket for the original object to linkwalk';
 
-    my $request_str = "$bucket/$object/";
+    my $request_str = "buckets/$bucket/keys/$object/";
     my $params = $args->{params};
 
     foreach my $depth (@$params) {
@@ -165,7 +171,7 @@ sub linkwalk {
 sub _send {
     my ($self, $request) = @_;
 
-    my $uri = sprintf('http://%s:%s/%s/%s', $self->host, $self->port, $request->namespace, $request->uri);
+    my $uri = sprintf('http://%s:%s/%s', $self->host, $self->port, $request->uri);
     my $headers = HTTP::Headers->new(
         'Content-Type' => $request->content_type,
     );
@@ -183,6 +189,7 @@ sub _send {
     my $ua = LWP::UserAgent->new(timeout => $self->timeout);
     my $http_response = $ua->request($http_request);
     my $response = Data::Riak::HTTP::Response->new({
+        riak => $self,
         http_response => $http_response
     });
 

@@ -4,12 +4,10 @@ use strict;
 use warnings;
 
 use Moose;
-use Data::Riak::Types qw/RiakResult/;
-
 
 has results => (
     is => 'rw',
-    isa => 'ArrayRef[RiakResult]',
+    isa => 'ArrayRef[Data::Riak::HTTP::Result]',
     required => 1
 );
 
