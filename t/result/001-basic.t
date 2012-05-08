@@ -32,4 +32,6 @@ my $derived_riak = $obj->riak;
 is($derived_riak->host, $riak->host, 'Derived host is correct');
 is($derived_riak->port, $riak->port, 'Derived port is correct');
 
+remove_test_bucket($bucket);
+
 done_testing;

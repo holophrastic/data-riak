@@ -39,4 +39,6 @@ $obj->sync;
 
 is($obj->value, 'baz', 'Object was updated and old value cleared');
 
+remove_test_bucket($bucket);
+
 done_testing;

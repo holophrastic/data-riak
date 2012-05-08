@@ -36,5 +36,6 @@ my $resultset = $walk_foo->results;
 isa_ok($resultset, 'Data::Riak::HTTP::ResultSet');
 is(scalar @{$resultset->results}, 2, 'Got two Riak::Results back from linkwalking foo');
 
+remove_test_bucket($bucket);
 
 done_testing;

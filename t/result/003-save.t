@@ -44,4 +44,6 @@ my $value2 = $obj2->value;
 
 is($value2, 'baz', 'Got updated value');
 
+remove_test_bucket($bucket);
+
 done_testing;

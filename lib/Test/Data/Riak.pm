@@ -27,3 +27,15 @@ sub skip_unless_riak {
     };
     return $up;
 }
+
+sub remove_test_bucket {
+    my $bucket = shift;
+    $bucket->remove_all;
+    Test::More::diag "Removing test bucket so sleeping for a moment to allow riak to eventually be consistent ...";
+    my $keys = $bucket->list_keys;
+    while ( $keys && @$keys ) {
+        sleep(1);
+        $keys = $bucket->list_keys;
+    }
+}
+
