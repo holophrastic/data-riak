@@ -77,6 +77,23 @@ sub get {
     }
     return $response->result;
 }
+
+sub list_keys {
+    my $self = shift;
+    my $request = Data::Riak::HTTP::Request->new({
+        method => 'GET',
+        uri => sprintf('buckets/%s/keys?keys=true', $self->name)
+    });
+
+    use Data::Dumper; warn Dumper $request;
+
+    my $response = $self->riak->send($request);
+    if($response->is_error) {
+        # don't just die here; return the busted object and let the caller handle it
+        return Data::Riak::HTTP::Result->new({
+            riak => $self->riak,
+            http_message => $response->http_response
+        });
     }
     return $response->result;
 }
