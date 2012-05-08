@@ -76,6 +76,13 @@ if($first_dw->value eq 'value of bar') {
     die 'Did not get the right results from the deep linkwalk';
 }
 
+$bucket->remove_all;
+
+diag "sleeping for 3 seconds so that we can eventually be consistent ...";
+sleep(3);
+
+is_deeply($bucket->list_keys, [], '... no keys left');
+
 done_testing;
 
 

@@ -97,6 +97,15 @@ sub list_keys {
     return decode_json( $response->result->value )->{'keys'};
 }
 
+sub remove_all {
+    my $self = shift;
+    my $keys = $self->list_keys;
+    return unless ref $keys eq 'ARRAY' && @$keys;
+    foreach my $key ( @$keys ) {
+        $self->remove( $key );
+    }
+}
+
 sub linkwalk {
     my ($self, $object, $params) = @_;
     return undef unless $params;
