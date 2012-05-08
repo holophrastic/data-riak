@@ -8,6 +8,7 @@ use HTTP::Headers::ActionPack::Link;
 use HTTP::Headers::ActionPack::LinkList;
 
 use URL::Encode qw/url_encode/;
+use JSON::XS qw/decode_json/;
 
 use Moose;
 
@@ -93,7 +94,7 @@ sub list_keys {
             http_message => $response->http_response
         });
     }
-    return $response->result;
+    return decode_json( $response->result->value )->{'keys'};
 }
 
 sub linkwalk {
