@@ -5,7 +5,6 @@ use warnings;
 
 use Data::Dump;
 
-use Test::Exception;
 use Test::More;
 use Test::Memory::Cycle;
 use Test::Data::Riak;

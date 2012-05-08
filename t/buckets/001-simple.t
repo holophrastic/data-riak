@@ -5,7 +5,7 @@ use warnings;
 
 use Data::Dump;
 
-use Test::Exception;
+use Test::Fatal;
 use Test::More;
 use Test::Data::Riak;
 
@@ -33,7 +33,6 @@ $bucket->remove('foo');
 $obj = $bucket->get('foo');
 is($obj->value, "not found\n", "Calling for a value that doesn't exist returns not found");
 is($obj->code, "404", "Calling for a value that doesn't exist returns 404");
-dies_ok(sub { $obj->parts }, "Can't call parts on a value that doesn't exist");
 
 $bucket->add('foo', 'value of foo');
 $bucket->add('bar', 'value of bar', [{ bucket => $bucket_name, type => 'buddy', target =>'foo' }]);
@@ -47,12 +46,11 @@ my $baz = $bucket->get('baz');
 is($foo->value, 'value of foo', 'correct value for foo');
 is($bar->value, 'value of bar', 'correct value for bar');
 is($baz->value, 'value of baz', 'correct value for baz');
-dies_ok(sub { $baz->parts }, 'Call to parts from a non-multipart message fails');
 
 my $walk_foo = $bucket->linkwalk('foo', [[ 'not a buddy', '_' ]]);
 my $parts = $walk_foo->parts;
 is(scalar @{$parts}, 2, 'Got two parts back from linkwalking foo');
-dies_ok(sub { $walk_foo->result }, 'Call to result from a multipart message fails');
+like(exception { $walk_foo->result }, qr/^Can\'t give a single result for a multipart response/, 'Call to result from a multipart message fails');
 
 my $resultset = $walk_foo->results;
 isa_ok($resultset, 'Data::Riak::HTTP::ResultSet');

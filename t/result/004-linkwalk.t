@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::Exception;
+use Test::Fatal;
 use Test::More;
 use Test::Data::Riak;
 
@@ -29,7 +29,7 @@ my $foo = $bucket->get('foo');
 my $walk_foo = $foo->linkwalk([[ 'not a buddy', 1 ]]);
 my $parts = $walk_foo->parts;
 is(scalar @{$parts}, 2, 'Got two parts back from linkwalking foo');
-dies_ok(sub { $walk_foo->result }, 'Call to result from a multipart message fails');
+like(exception { $walk_foo->result }, qr/^Can\'t give a single result for a multipart response/, 'Call to result from a multipart message fails');
 my $resultset = $walk_foo->results;
 isa_ok($resultset, 'Data::Riak::HTTP::ResultSet');
 is(scalar @{$resultset->results}, 2, 'Got two Riak::Results back from linkwalking foo');
