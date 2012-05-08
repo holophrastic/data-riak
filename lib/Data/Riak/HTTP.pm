@@ -12,6 +12,7 @@ use HTTP::Request;
 
 use Data::Riak::MapReduce;
 
+use Data::Riak::HTTP::Bucket;
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
 
@@ -124,6 +125,14 @@ sub buckets {
     return $self->raw('/buckets?buckets=true');
 }
 
+sub bucket {
+    my ($self, $bucket_name) = @_;
+    return Data::Riak::HTTP::Bucket->new({
+        riak => $self,
+        name => $bucket_name
+    })
+}
+
 # convenience method
 sub mapreduce {
     my ($self, $args) = @_;
@@ -176,6 +185,8 @@ sub _send {
         $headers,
         $request->data
     );
+
+    warn $http_request->as_string;
 
     my $ua = LWP::UserAgent->new(timeout => $self->timeout);
     my $http_response = $ua->request($http_request);
