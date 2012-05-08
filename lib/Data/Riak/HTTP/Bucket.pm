@@ -85,8 +85,6 @@ sub list_keys {
         uri => sprintf('buckets/%s/keys?keys=true', $self->name)
     });
 
-    use Data::Dumper; warn Dumper $request;
-
     my $response = $self->riak->send($request);
     if($response->is_error) {
         # don't just die here; return the busted object and let the caller handle it

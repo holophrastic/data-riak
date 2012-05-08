@@ -186,8 +186,6 @@ sub _send {
         $request->data
     );
 
-    warn $http_request->as_string;
-
     my $ua = LWP::UserAgent->new(timeout => $self->timeout);
     my $http_response = $ua->request($http_request);
     my $response = Data::Riak::HTTP::Response->new({
