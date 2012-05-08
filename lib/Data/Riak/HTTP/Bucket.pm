@@ -13,10 +13,8 @@ use Moose;
 
 has riak => (
     is => 'ro',
-    isa => 'Riak',
-    default => sub { {
-        return Data::Riak::HTTP->new;
-    } }
+    isa => 'Data::Riak::HTTP',
+    required => 1
 );
 
 has name => (
@@ -72,7 +70,13 @@ sub get {
     my $response = $self->riak->send($request);
     if($response->is_error) {
         # don't just die here; return the busted object and let the caller handle it
-        return Data::Riak::HTTP::Result->new({ http_message => $response->http_response });
+        return Data::Riak::HTTP::Result->new({
+            riak => $self->riak,
+            http_message => $response->http_response
+        });
+    }
+    return $response->result;
+}
     }
     return $response->result;
 }

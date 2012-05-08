@@ -8,6 +8,12 @@ use Moose;
 use Data::Riak::HTTP::Result;
 use Data::Riak::HTTP::ResultSet;
 
+has riak => (
+    is => 'ro',
+    isa => 'Data::Riak::HTTP',
+    required => 1
+);
+
 has 'code' => (
     is => 'ro',
     isa => 'Int',
@@ -74,13 +80,13 @@ sub results {
     # did we only get one?
     unless($self->is_multi) {
         my $result = $self->result;
-        my $resultset = Data::Riak::HTTP::ResultSet->new({ results => [ $result ] });
+        my $resultset = Data::Riak::HTTP::ResultSet->new({ riak => $self->riak, results => [ $result ] });
         return $resultset;
     }
 
     my $results;
     foreach my $part (@{$self->parts}) {
-        push @{$results}, Data::Riak::HTTP::Result->new({ http_message => $part });
+        push @{$results}, Data::Riak::HTTP::Result->new({ riak => $self->riak, http_message => $part });
     }
     my $resultset = Data::Riak::HTTP::ResultSet->new({ results => $results });
 
@@ -99,7 +105,7 @@ sub result {
         die "Can't give a single result for a multipart response!";
     }
 
-    return Data::Riak::HTTP::Result->new({ http_message => $self->http_response });
+    return Data::Riak::HTTP::Result->new({ riak => $self->riak, http_message => $self->http_response });
 }
 
 __PACKAGE__->meta->make_immutable;

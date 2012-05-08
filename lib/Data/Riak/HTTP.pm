@@ -130,6 +130,8 @@ sub mapreduce {
     my $config = $args->{config};
     my $query = $args->{query};
 
+    $config->{riak} ||= $self;
+
     my $mr = Data::Riak::MapReduce->new($config);
     return $mr->mapreduce($query);
 }
@@ -178,6 +180,7 @@ sub _send {
     my $ua = LWP::UserAgent->new(timeout => $self->timeout);
     my $http_response = $ua->request($http_request);
     my $response = Data::Riak::HTTP::Response->new({
+        riak => $self,
         http_response => $http_response
     });
 

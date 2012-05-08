@@ -7,18 +7,8 @@ use Moose;
 
 has riak => (
     is => 'ro',
-    isa => 'Riak',
-    lazy => 1,
-    default => sub { {
-        my $self = shift;
-        my @uri_parts = split /\//, $self->http_message->request->uri;
-        my @loc_parts = split /\:/, $uri_parts[2];
-
-        return Data::Riak::HTTP->new({
-            host => $loc_parts[0],
-            port => $loc_parts[1]
-        });
-    } }
+    isa => 'Data::Riak::HTTP',
+    required => 1
 );
 
 has bucket_name => (

@@ -7,19 +7,13 @@ use Moose;
 
 use JSON::XS;
 
-use Data::Riak::Types qw/Riak/;
-
 use Data::Riak::HTTP;
 use Data::Riak::MapReduce::MapReduceComponent;
 
 has riak => (
     is => 'ro',
-    isa => 'Riak',
-    lazy => 1,
-    default => sub { {
-        my $riak = Data::Riak::HTTP->new;
-        return $riak;
-    } }
+    isa => 'Data::Riak::HTTP',
+    required => 1
 );
 
 has config => (

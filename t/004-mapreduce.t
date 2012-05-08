@@ -70,6 +70,7 @@ $bucket->add('p2', $text2);
 $bucket->add('p5', $text3);
 
 my $mr = Data::Riak::MapReduce->new({
+    riak => $riak,
     inputs => [ [ $bucket_name, "p1" ], [ $bucket_name, "p2" ], [ $bucket_name, "p5" ] ],
     map => {
         language => 'javascript',
