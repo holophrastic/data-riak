@@ -89,6 +89,40 @@ sub linkwalk {
     });
 }
 
+sub props {
+    my $self = shift;
+
+    my $request = Data::Riak::HTTP::Request->new({
+        method => 'GET',
+        uri => $self->name
+    });
+
+    return $self->riak->send($request);
+}
+
+sub indexing {
+    my ($self, $enable) = @_;
+
+    my $data;
+
+    if($enable) {
+        $data->{props}->{precommit}->{mod} = 'riak_search_kv_hook';
+        $data->{props}->{precommit}->{fun} = 'precommit';
+    } else {
+        $data->{props}->{precommit}->{mod} = undef;
+        $data->{props}->{precommit}->{fun} = undef;
+    };
+
+    my $request = Data::Riak::HTTP::Request->new({
+        method => 'PUT',
+        content_type => 'application/json',
+        uri => $self->name,
+        data => $data
+    });
+
+    return $self->riak->send($request);
+}
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 
