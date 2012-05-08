@@ -11,6 +11,8 @@ use Data::Riak::HTTP;
 
 my @exports = qw[
     skip_unless_riak
+    remove_test_bucket
+    create_test_bucket_name
 ];
 
 Sub::Exporter::setup_exporter({
