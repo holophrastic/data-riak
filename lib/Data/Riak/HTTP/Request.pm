@@ -41,12 +41,6 @@ has content_type => (
     default => 'text/plain'
 );
 
-has namespace => (
-    is => 'ro',
-    isa => 'Str',
-    default => 'riak'
-);
-
 __PACKAGE__->meta->make_immutable;
 no Moose;
 

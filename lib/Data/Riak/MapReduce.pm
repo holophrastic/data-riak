@@ -90,7 +90,6 @@ sub mapreduce {
         uri => $uri,
 #        data => $query
         data => encode_json($data),
-        namespace => ''
     });
     return $self->riak->send($request);
 }

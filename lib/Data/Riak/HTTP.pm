@@ -89,8 +89,7 @@ sub raw {
     $method ||= "GET";
     my $request = Data::Riak::HTTP::Request->new({
         uri => $uri,
-        method => $method,
-        namespace => ''
+        method => $method
     });
     my $response = $self->_send($request);
     return $response;
@@ -161,7 +160,7 @@ sub linkwalk {
 sub _send {
     my ($self, $request) = @_;
 
-    my $uri = sprintf('http://%s:%s/%s/%s', $self->host, $self->port, $request->namespace, $request->uri);
+    my $uri = sprintf('http://%s:%s/%s', $self->host, $self->port, $request->uri);
     my $headers = HTTP::Headers->new(
         'Content-Type' => $request->content_type,
     );
