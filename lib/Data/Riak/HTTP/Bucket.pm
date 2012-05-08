@@ -9,8 +9,6 @@ use HTTP::Headers::ActionPack::LinkList;
 
 use URL::Encode qw/url_encode/;
 
-use Scalar::Util qw/blessed/;
-
 use Moose;
 
 has riak => (

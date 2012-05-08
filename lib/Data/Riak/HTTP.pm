@@ -10,8 +10,6 @@ use HTTP::Headers;
 use HTTP::Response;
 use HTTP::Request;
 
-use Scalar::Util qw/blessed/;
-
 use Data::Riak::MapReduce;
 
 use Data::Riak::HTTP::Request;
