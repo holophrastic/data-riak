@@ -28,7 +28,7 @@ has bucket_name => (
     default => sub { {
         my $self = shift;
         my @uri_parts = split /\//, $self->http_message->request->uri;
-        return $uri_parts[$#uri_parts - 1];
+        return $uri_parts[$#uri_parts - 2];
     } }
 );
 

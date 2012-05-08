@@ -34,7 +34,7 @@ sub add {
             if(blessed $link && $link->isa('HTTP::Headers::ActionPack::Link')) {
                 $pack->add($link);
             } else {
-                my $link_url = $link->{url} || sprintf('/riak/%s/%s', $link->{bucket} || $self->name, $link->{target});
+                my $link_url = $link->{url} || sprintf('/buckets/%s/keys/%s', $link->{bucket} || $self->name, $link->{target});
                 my $created_link = HTTP::Headers::ActionPack::Link->new(
                     $link_url => (
                         riaktag => url_encode($link->{type})
@@ -47,7 +47,7 @@ sub add {
 
     my $request = Data::Riak::HTTP::Request->new({
         method => 'PUT',
-        uri => sprintf('%s/%s', $self->name, $key),
+        uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
         data => $value,
         links => $pack
     });
@@ -58,7 +58,7 @@ sub remove {
     my ($self, $key) = @_;
     my $request = Data::Riak::HTTP::Request->new({
         method => 'DELETE',
-        uri => sprintf('%s/%s', $self->name, $key)
+        uri => sprintf('buckets/%s/keys/%s', $self->name, $key)
     });
     return $self->riak->send($request);
 }
@@ -67,7 +67,7 @@ sub get {
     my ($self, $key) = @_;
     my $request = Data::Riak::HTTP::Request->new({
         method => 'GET',
-        uri => sprintf('%s/%s', $self->name, $key)
+        uri => sprintf('buckets/%s/keys/%s', $self->name, $key)
     });
     my $response = $self->riak->send($request);
     if($response->is_error) {

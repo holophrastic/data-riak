@@ -139,7 +139,7 @@ sub linkwalk {
     my $object = $args->{object} || die 'You must have an object to linkwalk';
     my $bucket = $args->{bucket} || die 'You must have a bucket for the original object to linkwalk';
 
-    my $request_str = "$bucket/$object/";
+    my $request_str = "buckets/$bucket/keys/$object/";
     my $params = $args->{params};
 
     foreach my $depth (@$params) {
