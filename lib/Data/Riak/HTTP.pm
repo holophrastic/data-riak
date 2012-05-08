@@ -122,7 +122,7 @@ and convenience.
 
 sub buckets {
     my $self = shift;
-    return $self->raw('riak/buckets?buckets=true');
+    return $self->raw('/buckets?buckets=true');
 }
 
 # convenience method
