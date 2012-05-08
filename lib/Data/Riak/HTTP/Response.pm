@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Moose;
-use Data::Riak::Types qw/HTTPResponse HTTPMessage HTTPHeadersActionPack/;
 
 use Data::Riak::HTTP::Result;
 use Data::Riak::HTTP::ResultSet;
@@ -21,7 +20,7 @@ has 'code' => (
 
 has 'parts' => (
     is => 'ro',
-    isa => 'ArrayRef[HTTPMessage]',
+    isa => 'ArrayRef[HTTP::Message]',
     lazy => 1,
     default => sub { {
         my $self = shift;
@@ -41,7 +40,7 @@ has 'parts' => (
 
 has 'http_response' => (
     is => 'ro',
-    isa => 'HTTPResponse',
+    isa => 'HTTP::Response',
     required => 1
 );
 

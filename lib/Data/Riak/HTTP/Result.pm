@@ -78,7 +78,7 @@ has links => (
 
 has http_message => (
     is => 'rw',
-    isa => 'HTTPMessage',
+    isa => 'HTTP::Message',
     required => 1
 );
 

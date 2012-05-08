@@ -8,8 +8,6 @@ use Moose;
 use HTTP::Headers::ActionPack;
 use HTTP::Headers::ActionPack::LinkList;
 
-use Data::Riak::Types qw/HTTPHeadersActionPackLinkList/;
-
 has method => (
     is => 'ro',
     isa => 'Str',
@@ -30,7 +28,8 @@ has data => (
 
 has links => (
     is => 'ro',
-    isa => 'HTTPHeadersActionPackLinkList',
+    isa => 'HTTP::Headers::ActionPack::LinkList',
+    # TODO: make this coerce
     default => sub { {
         return HTTP::Headers::ActionPack::LinkList->new;
     } }

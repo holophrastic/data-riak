@@ -17,8 +17,6 @@ use Data::Riak::MapReduce;
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
 
-use Data::Riak::Types qw/HTTPResponse/;
-
 use Data::Dump;
 
 =attr host
