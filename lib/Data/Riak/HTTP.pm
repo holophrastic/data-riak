@@ -125,6 +125,12 @@ sub buckets {
     return $self->raw('/buckets?buckets=true');
 }
 
+=method bucket ($name)
+
+Given a C<$name>, this will return a L<Data::Riak::HTTP::Bucket> object for it.
+
+=cut
+
 sub bucket {
     my ($self, $bucket_name) = @_;
     return Data::Riak::HTTP::Bucket->new({
