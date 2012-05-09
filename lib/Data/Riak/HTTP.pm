@@ -74,26 +74,9 @@ Tests to see if the specified Riak server is answering. Returns 0 for no, 1 for 
 
 sub ping {
     my $self = shift;
-    my $response = $self->raw('ping');
+    my $response = $self->send({ method => 'GET', uri => 'ping' });
     return 0 unless($response->code eq '200');
     return 1;
-}
-
-=method raw ($uri, $method)
-
-Send a URL to the riak server, unchanged. $method defaults to GET.
-
-=cut
-
-sub raw {
-    my ($self, $uri, $method) = @_;
-    $method ||= "GET";
-    my $request = Data::Riak::HTTP::Request->new({
-        uri => $uri,
-        method => $method
-    });
-    my $response = $self->_send($request);
-    return $response;
 }
 
 =method send ($request)
@@ -122,7 +105,7 @@ and convenience.
 
 sub buckets {
     my $self = shift;
-    return $self->raw('/buckets?buckets=true');
+    return $self->send({ method => 'GET', uri => '/buckets?buckets=true' });
 }
 
 =method bucket ($name)
