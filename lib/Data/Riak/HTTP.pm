@@ -95,7 +95,7 @@ sub send {
     return $response;
 }
 
-=method buckets
+=method _buckets
 
 Get the list of buckets. This is NOT RECOMMENDED for production systems, as Riak
 has to essentially walk the entire database. Here purely as a tool for debugging
@@ -103,7 +103,7 @@ and convenience.
 
 =cut
 
-sub buckets {
+sub _buckets {
     my $self = shift;
     return $self->send({ method => 'GET', uri => '/buckets?buckets=true' });
 }

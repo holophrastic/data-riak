@@ -11,7 +11,9 @@ skip_unless_riak;
 
 my $riak = Data::Riak::HTTP->new;
 
-my $response = $riak->buckets;
+# TODO : remove this test, it is not advisable
+
+my $response = $riak->_buckets;
 isa_ok($response, 'Data::Riak::HTTP::Response');
 
 my $result = $response->result;
