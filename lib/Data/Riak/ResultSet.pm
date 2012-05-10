@@ -1,4 +1,4 @@
-package Data::Riak::HTTP::ResultSet;
+package Data::Riak::ResultSet;
 
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ use Moose;
 
 has results => (
     is => 'rw',
-    isa => 'ArrayRef[Data::Riak::HTTP::Result]',
+    isa => 'ArrayRef[Data::Riak::Result]',
     required => 1
 );
 

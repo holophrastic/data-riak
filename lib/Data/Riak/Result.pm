@@ -1,4 +1,4 @@
-package Data::Riak::HTTP::Result;
+package Data::Riak::Result;
 
 use strict;
 use warnings;
@@ -75,7 +75,7 @@ has http_message => (
 # if it's been changed on the server, discard those changes and update the object
 sub sync {
     my $self = shift;
-    my $bucket = Data::Riak::HTTP::Bucket->new({
+    my $bucket = Data::Riak::Bucket->new({
         name => $self->bucket_name,
         riak => $self->riak
     });
@@ -89,7 +89,7 @@ sub sync {
 # if it's been changed locally, save those changes to the server
 sub save {
     my $self = shift;
-    my $bucket = Data::Riak::HTTP::Bucket->new({
+    my $bucket = Data::Riak::Bucket->new({
         name => $self->bucket_name,
         riak => $self->riak
     });

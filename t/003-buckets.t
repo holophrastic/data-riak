@@ -17,7 +17,7 @@ my $response = $riak->_buckets;
 isa_ok($response, 'Data::Riak::HTTP::Response');
 
 my $result = $response->result;
-isa_ok( $result, 'Data::Riak::HTTP::Result');
+isa_ok( $result, 'Data::Riak::Result');
 
 my $value = decode_json( $result->value );
 ok( exists $value->{'buckets'}, '... got buckets' );

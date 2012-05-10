@@ -8,14 +8,14 @@ use Test::More;
 use Test::Data::Riak;
 
 use Data::Riak::HTTP;
-use Data::Riak::HTTP::Bucket;
+use Data::Riak::Bucket;
 
 skip_unless_riak;
 
 my $riak = Data::Riak::HTTP->new;
 my $bucket_name = create_test_bucket_name;
 
-my $bucket = Data::Riak::HTTP::Bucket->new({
+my $bucket = Data::Riak::Bucket->new({
     name => $bucket_name,
     riak => $riak
 });
@@ -31,7 +31,7 @@ my $parts = $walk_foo->parts;
 is(scalar @{$parts}, 2, 'Got two parts back from linkwalking foo');
 like(exception { $walk_foo->result }, qr/^Can\'t give a single result for a multipart response/, 'Call to result from a multipart message fails');
 my $resultset = $walk_foo->results;
-isa_ok($resultset, 'Data::Riak::HTTP::ResultSet');
+isa_ok($resultset, 'Data::Riak::ResultSet');
 is(scalar @{$resultset->results}, 2, 'Got two Riak::Results back from linkwalking foo');
 
 remove_test_bucket($bucket);

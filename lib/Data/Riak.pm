@@ -18,7 +18,7 @@ while still allowing you to do complicated tasks.
         timeout => 5
     });
 
-    my $bucket = Data::Riak::HTTP::Bucket->new({
+    my $bucket = Data::Riak::Bucket->new({
         name => 'my_bucket',
         riak => $riak
     });

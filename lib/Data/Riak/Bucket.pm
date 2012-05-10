@@ -1,4 +1,4 @@
-package Data::Riak::HTTP::Bucket;
+package Data::Riak::Bucket;
 
 use strict;
 use warnings;
@@ -71,7 +71,7 @@ sub get {
     my $response = $self->riak->send($request);
     if($response->is_error) {
         # don't just die here; return the busted object and let the caller handle it
-        return Data::Riak::HTTP::Result->new({
+        return Data::Riak::Result->new({
             riak => $self->riak,
             http_message => $response->http_response
         });
@@ -89,7 +89,7 @@ sub list_keys {
     my $response = $self->riak->send($request);
     if($response->is_error) {
         # don't just die here; return the busted object and let the caller handle it
-        return Data::Riak::HTTP::Result->new({
+        return Data::Riak::Result->new({
             riak => $self->riak,
             http_message => $response->http_response
         });

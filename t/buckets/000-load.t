@@ -6,7 +6,7 @@ use warnings;
 use Test::More;
 
 BEGIN {
-	use_ok('Data::Riak::HTTP::Bucket');
+	use_ok('Data::Riak::Bucket');
 }
 
 done_testing;

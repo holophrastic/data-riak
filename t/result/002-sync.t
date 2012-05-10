@@ -9,19 +9,19 @@ use Test::More;
 use Test::Data::Riak;
 
 use Data::Riak::HTTP;
-use Data::Riak::HTTP::Bucket;
+use Data::Riak::Bucket;
 
 skip_unless_riak;
 
 my $riak = Data::Riak::HTTP->new;
 my $bucket_name = create_test_bucket_name;
 
-my $bucket = Data::Riak::HTTP::Bucket->new({
+my $bucket = Data::Riak::Bucket->new({
     name => $bucket_name,
     riak => $riak
 });
 
-my $bucket2 = Data::Riak::HTTP::Bucket->new({
+my $bucket2 = Data::Riak::Bucket->new({
     name => $bucket_name,
     riak => $riak
 });

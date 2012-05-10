@@ -12,7 +12,7 @@ use HTTP::Request;
 
 use Data::Riak::MapReduce;
 
-use Data::Riak::HTTP::Bucket;
+use Data::Riak::Bucket;
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
 
@@ -110,13 +110,13 @@ sub _buckets {
 
 =method bucket ($name)
 
-Given a C<$name>, this will return a L<Data::Riak::HTTP::Bucket> object for it.
+Given a C<$name>, this will return a L<Data::Riak::Bucket> object for it.
 
 =cut
 
 sub bucket {
     my ($self, $bucket_name) = @_;
-    return Data::Riak::HTTP::Bucket->new({
+    return Data::Riak::Bucket->new({
         riak => $self,
         name => $bucket_name
     })

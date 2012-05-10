@@ -6,7 +6,7 @@ use warnings;
 use Test::More;
 
 BEGIN {
-	use_ok('Data::Riak::HTTP::Result');
+	use_ok('Data::Riak::Result');
 }
 
 done_testing;
