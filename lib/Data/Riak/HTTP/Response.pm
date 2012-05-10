@@ -5,6 +5,8 @@ use warnings;
 
 use Moose;
 
+use overload '""' => 'to_string', fallback => 1;
+
 my $_deconstruct_parts;
 
 has 'parts' => (
@@ -26,7 +28,8 @@ has 'http_response' => (
         code       => 'code',
         value      => 'content',
         is_success => 'is_success',
-        is_error   => 'is_error'
+        is_error   => 'is_error',
+        to_string  => 'to_string',
     }
 );
 
