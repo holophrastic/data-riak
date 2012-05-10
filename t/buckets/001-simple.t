@@ -24,6 +24,7 @@ my $bucket = Data::Riak::Bucket->new({
 });
 
 $bucket->add('foo', 'bar');
+
 my $obj = $bucket->get('foo');
 is($obj->value, 'bar', 'Check the value immediately after insertion');
 

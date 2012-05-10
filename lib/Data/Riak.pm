@@ -71,7 +71,6 @@ sub send_request {
     my @parts = @{ $response->parts };
 
     return unless @parts;
-
     return Data::Riak::ResultSet->new({
         results => [
             map {

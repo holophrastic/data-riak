@@ -35,6 +35,7 @@ has 'http_response' => (
 
 $_deconstruct_parts = sub {
     my $message = shift;
+    return () unless $message->content;
     my @parts = $message->parts;
     return $message unless @parts;
     return map { $_deconstruct_parts->( $_ ) } @parts;
