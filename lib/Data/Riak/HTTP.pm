@@ -1,18 +1,16 @@
 package Data::Riak::HTTP;
+# ABSTRACT: An interface to a Riak server, using its HTTP (REST) interface
+
+use strict;
+use warnings;
 
 use Moose;
-with 'Data::Riak';
-
-# ABSTRACT: An interface to a Riak server, using its HTTP (REST) interface
 
 use LWP;
 use HTTP::Headers;
 use HTTP::Response;
 use HTTP::Request;
 
-use Data::Riak::MapReduce;
-
-use Data::Riak::Bucket;
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
 
@@ -95,68 +93,6 @@ sub send {
     return $response;
 }
 
-=method _buckets
-
-Get the list of buckets. This is NOT RECOMMENDED for production systems, as Riak
-has to essentially walk the entire database. Here purely as a tool for debugging
-and convenience.
-
-=cut
-
-sub _buckets {
-    my $self = shift;
-    return $self->send({ method => 'GET', uri => '/buckets?buckets=true' });
-}
-
-=method bucket ($name)
-
-Given a C<$name>, this will return a L<Data::Riak::Bucket> object for it.
-
-=cut
-
-sub bucket {
-    my ($self, $bucket_name) = @_;
-    return Data::Riak::Bucket->new({
-        riak => $self,
-        name => $bucket_name
-    })
-}
-
-# convenience method
-sub mapreduce {
-    my ($self, $args) = @_;
-    my $config = $args->{config};
-    my $query = $args->{query};
-
-    $config->{riak} ||= $self;
-
-    my $mr = Data::Riak::MapReduce->new($config);
-    return $mr->mapreduce($query);
-}
-
-sub linkwalk {
-    my ($self, $args) = @_;
-    my $object = $args->{object} || die 'You must have an object to linkwalk';
-    my $bucket = $args->{bucket} || die 'You must have a bucket for the original object to linkwalk';
-
-    my $request_str = "buckets/$bucket/keys/$object/";
-    my $params = $args->{params};
-
-    foreach my $depth (@$params) {
-        if(scalar @{$depth} == 2) {
-            unshift @{$depth}, $bucket;
-        }
-        my ($buck, $tag, $keep) = @{$depth};
-        $request_str .= "$buck,$tag,$keep/";
-    }
-    my $request = Data::Riak::HTTP::Request->new({
-        method => 'GET',
-        uri => $request_str
-    });
-
-    return $self->_send($request);
-}
-
 sub _send {
     my ($self, $request) = @_;
 
@@ -176,9 +112,10 @@ sub _send {
     );
 
     my $ua = LWP::UserAgent->new(timeout => $self->timeout);
+
     my $http_response = $ua->request($http_request);
+
     my $response = Data::Riak::HTTP::Response->new({
-        riak => $self,
         http_response => $http_response
     });
 
