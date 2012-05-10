@@ -72,18 +72,13 @@ sub send_request {
 
     return unless @parts;
 
-    if (scalar @parts == 1) {
-        return Data::Riak::Result->new({ riak => $self, http_message => $parts[0] })
-    }
-    else {
-        return Data::Riak::ResultSet->new({
-            results => [
-                map {
-                    Data::Riak::Result->new({ riak => $self, http_message => $_ })
-                } @parts
-            ]
-        })
-    }
+    return Data::Riak::ResultSet->new({
+        results => [
+            map {
+                Data::Riak::Result->new({ riak => $self, http_message => $_ })
+            } @parts
+        ]
+    });
 }
 
 =method _buckets
@@ -98,7 +93,7 @@ sub _buckets {
     my $self = shift;
     return $self->send_request({
         method => 'GET', uri => '/buckets?buckets=true'
-    });
+    })->first;
 }
 
 =method bucket ($name)
