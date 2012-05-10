@@ -5,38 +5,21 @@ use warnings;
 
 use Data::Dump;
 
-use Test::Exception;
 use Test::More;
 use Test::Data::Riak;
 
-use Data::Riak::HTTP;
-use Data::Riak::HTTP::Bucket;
+use Data::Riak;
+use Data::Riak::Bucket;
 
 skip_unless_riak;
 
-my $riak = Data::Riak::HTTP->new;
-#my $bucket_name = create_test_bucket_name;
-
-#my $bucket = Data::Riak::HTTP::Bucket->new({
-#    name => $bucket_name,
-#    riak => $riak
-#});
-
-#$bucket->add('foo', 'dog');
-#$bucket->add('bar', 'cat');
-#$bucket->add('baz', 'dogs and cats living together');
-#$bucket->add('qux', 'gerbils');
-
-#my $mr = Data::Riak::HTTP::MapReduce->new;
-
-#my $results = $mr->mapreduce({ });
-#ddx($results);
+my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
 
 # Implement the example from the Riak docs.
 
 my $bucket_name = create_test_bucket_name;
 
-my $bucket = Data::Riak::HTTP::Bucket->new({
+my $bucket = Data::Riak::Bucket->new({
     name => $bucket_name,
     riak => $riak
 });
@@ -80,13 +63,14 @@ my $mr = Data::Riak::MapReduce->new({
         source => 'function(v) { var r = {}; for(var i in v) { for(var w in v[i]) { if(w in r) r[w] += v[i][w];       else r[w] = v[i][w]; } } return [r]; }'
     }
 });
-my $results = $mr->mapreduce;
+#my $results = $mr->mapreduce;
 #ddx($results);
 #ddx($mr);
-print $results->http_response->content;
+#ok $results->http_response->content;
 
+remove_test_bucket($bucket);
 
-
+done_testing;
 
 
 
