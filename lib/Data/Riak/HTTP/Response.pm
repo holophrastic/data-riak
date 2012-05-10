@@ -5,24 +5,7 @@ use warnings;
 
 use Moose;
 
-use Data::Riak::Result;
-use Data::Riak::ResultSet;
-
-has riak => (
-    is => 'ro',
-    isa => 'Data::Riak::HTTP',
-    required => 1
-);
-
-has 'code' => (
-    is => 'ro',
-    isa => 'Int',
-    lazy => 1,
-    default => sub { {
-        my $self = shift;
-        return $self->http_response->code;
-    } }
-);
+my $_deconstruct_parts;
 
 has 'parts' => (
     is => 'ro',
@@ -30,16 +13,7 @@ has 'parts' => (
     lazy => 1,
     default => sub { {
         my $self = shift;
-
-        if($self->is_error) {
-            die "Can't get parts from a response with an error code";
-        }
-
-        unless($self->is_multi) {
-            die "Can't get parts from a message that isn't multipart";
-        }
-
-        my @parts = $self->http_response->parts->parts;
+        my @parts = $_deconstruct_parts->( $self->http_response );
         return \@parts;
     } }
 );
@@ -47,66 +21,21 @@ has 'parts' => (
 has 'http_response' => (
     is => 'ro',
     isa => 'HTTP::Response',
-    required => 1
+    required => 1,
+    handles => {
+        code       => 'code',
+        value      => 'content',
+        is_success => 'is_success',
+        is_error   => 'is_error'
+    }
 );
 
-
-sub is_multi {
-    my $self = shift;
-    if($self->http_response->content_type =~ /^multipart/ ) {
-        return 1;
-    }
-    return 0;
-}
-
-sub is_error {
-    my $self = shift;
-
-    # simple case for now
-    if($self->code =~  /^(4|5)/) {
-        return 1;
-    }
-    return 0;
-}
-
-sub results {
-    my $self = shift;
-
-    # in case they didn't check this first
-    if($self->is_error) {
-        die "Got an error from the server, no result";
-    }
-
-    # did we only get one?
-    unless($self->is_multi) {
-        my $result = $self->result;
-        my $resultset = Data::Riak::ResultSet->new({ riak => $self->riak, results => [ $result ] });
-        return $resultset;
-    }
-
-    my $results;
-    foreach my $part (@{$self->parts}) {
-        push @{$results}, Data::Riak::Result->new({ riak => $self->riak, http_message => $part });
-    }
-    my $resultset = Data::Riak::ResultSet->new({ results => $results });
-
-}
-
-sub result {
-    my $self = shift;
-
-    # in case they didn't check this first
-    if($self->is_error) {
-        die "Got an error from the server, no result";
-    }
-
-    # also, something the user should check first
-    if($self->is_multi) {
-        die "Can't give a single result for a multipart response!";
-    }
-
-    return Data::Riak::Result->new({ riak => $self->riak, http_message => $self->http_response });
-}
+$_deconstruct_parts = sub {
+    my $message = shift;
+    my @parts = $message->parts;
+    return $message unless @parts;
+    return map { $_deconstruct_parts->( $_ ) } @parts;
+};
 
 __PACKAGE__->meta->make_immutable;
 no Moose;
