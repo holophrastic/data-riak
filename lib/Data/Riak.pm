@@ -1,8 +1,17 @@
 package Data::Riak;
-
-use Moose::Role;
-
 # ABSTRACT: An interface to a Riak server.
+
+use strict;
+use warnings;
+
+use Moose;
+
+use Data::Riak::Result;
+use Data::Riak::ResultSet;
+use Data::Riak::Bucket;
+use Data::Riak::MapReduce;
+
+use Data::Riak::HTTP;
 
 =head1 DESCRIPTION
 
@@ -12,10 +21,12 @@ while still allowing you to do complicated tasks.
 
 =head1 SYNOPSIS
 
-    my $riak = Data::Riak::HTTP->new({
-        host => 'riak.example.com',
-        port => '8098',
-        timeout => 5
+    my $riak = Data::Riak->new({
+        transport => Data::Riak::HTTP->new({
+            host => 'riak.example.com',
+            port => '8098',
+            timeout => 5
+        })
     });
 
     my $bucket = Data::Riak::Bucket->new({
@@ -36,6 +47,109 @@ while still allowing you to do complicated tasks.
     my $code = $foo->code;
 
 =begin :prelude
+
+=cut
+
+has transport => (
+    is => 'ro',
+    isa => 'Data::Riak::HTTP',
+    required => 1,
+    handles => {
+        'ping' => 'ping'
+    }
+);
+
+sub send_request {
+    my ($self, $request) = @_;
+
+    my $response = $self->transport->send($request);
+
+    if ($response->is_error) {
+        die $response;
+    }
+
+    my @parts = @{ $response->parts };
+
+    return unless @parts;
+
+    if (scalar @parts == 1) {
+        return Data::Riak::Result->new({ riak => $self, http_message => $parts[0] })
+    }
+    else {
+        return Data::Riak::ResultSet->new({
+            results => [
+                map {
+                    Data::Riak::Result->new({ riak => $self, http_message => $_ })
+                } @parts
+            ]
+        })
+    }
+}
+
+=method _buckets
+
+Get the list of buckets. This is NOT RECOMMENDED for production systems, as Riak
+has to essentially walk the entire database. Here purely as a tool for debugging
+and convenience.
+
+=cut
+
+sub _buckets {
+    my $self = shift;
+    return $self->send_request({
+        method => 'GET', uri => '/buckets?buckets=true'
+    });
+}
+
+=method bucket ($name)
+
+Given a C<$name>, this will return a L<Data::Riak::Bucket> object for it.
+
+=cut
+
+sub bucket {
+    my ($self, $bucket_name) = @_;
+    return Data::Riak::Bucket->new({
+        riak => $self,
+        name => $bucket_name
+    })
+}
+
+# convenience method
+sub mapreduce {
+    my ($self, $args) = @_;
+    my $config = $args->{config};
+    my $query = $args->{query};
+
+    $config->{riak} ||= $self;
+
+    my $mr = Data::Riak::MapReduce->new($config);
+    return $mr->mapreduce($query);
+}
+
+sub linkwalk {
+    my ($self, $args) = @_;
+    my $object = $args->{object} || die 'You must have an object to linkwalk';
+    my $bucket = $args->{bucket} || die 'You must have a bucket for the original object to linkwalk';
+
+    my $request_str = "buckets/$bucket/keys/$object/";
+    my $params = $args->{params};
+
+    foreach my $depth (@$params) {
+        if(scalar @{$depth} == 2) {
+            unshift @{$depth}, $bucket;
+        }
+        my ($buck, $tag, $keep) = @{$depth};
+        $request_str .= "$buck,$tag,$keep/";
+    }
+
+    return $self->send_request({
+        method => 'GET',
+        uri => $request_str
+    });
+}
+
+=pod
 
 =head1 LINKWALKING
 
@@ -70,21 +184,16 @@ The bucket passed in on the riak object's linkwalk is the bucket the original ta
 
 =cut
 
-=end :prelude
-
-=cut
-
-requires 'send';
-requires 'linkwalk';
-
 =begin :postlude
+
+=head1 ACKNOWLEDGEMENTS
+
 
 =end :postlude
 
 =cut
 
-no Moose::Role;
+__PACKAGE__->meta->make_immutable;
+no Moose;
 
 1;
-
-__END__
