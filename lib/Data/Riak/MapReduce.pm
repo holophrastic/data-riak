@@ -7,12 +7,11 @@ use Moose;
 
 use JSON::XS;
 
-use Data::Riak::HTTP;
 use Data::Riak::MapReduce::MapReduceComponent;
 
 has riak => (
     is => 'ro',
-    isa => 'Data::Riak::HTTP',
+    isa => 'Data::Riak',
     required => 1
 );
 
@@ -78,14 +77,13 @@ sub mapreduce {
     #$query->{query}->{reduce} = Data::Riak::HTTP::MapReduce::MapReduceComponent->new($raw_query->{reduce})->block if($raw_query->{reduce});
     #$query->{query}->{link} = $raw_query->{link} if($raw_query->{link});
 
-    my $request = Data::Riak::HTTP::Request->new({
+    return $self->riak->send_request({
         content_type => 'application/json',
         method => 'POST',
         uri => $uri,
 #        data => $query
         data => encode_json($data),
     });
-    return $self->riak->send($request);
 }
 
 __PACKAGE__->meta->make_immutable;

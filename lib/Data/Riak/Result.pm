@@ -7,7 +7,7 @@ use Moose;
 
 has riak => (
     is => 'ro',
-    isa => 'Data::Riak::HTTP',
+    isa => 'Data::Riak',
     required => 1
 );
 
