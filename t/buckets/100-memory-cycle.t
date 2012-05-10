@@ -4,17 +4,18 @@ use strict;
 use warnings;
 
 use Data::Dump;
+use Try::Tiny;
 
 use Test::More;
 use Test::Memory::Cycle;
 use Test::Data::Riak;
 
-use Data::Riak::HTTP;
+use Data::Riak;
 use Data::Riak::Bucket;
 
 skip_unless_riak;
 
-my $riak = Data::Riak::HTTP->new;
+my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
 my $bucket_name = create_test_bucket_name;
 
 my $bucket = Data::Riak::Bucket->new({
@@ -35,8 +36,11 @@ memory_cycle_ok($bucket, '... bucket is (still) cycle free');
 memory_cycle_ok($riak, '... riak is cycle free');
 
 $bucket->remove('foo');
-$obj = $bucket->get('foo');
-is($obj->code, "404", "Calling for a value that doesn't exist returns 404");
+try {
+    $bucket->get('foo');
+} catch {
+    is($_->code, "404", "Calling for a value that doesn't exist returns 404");
+};
 
 memory_cycle_ok($obj, '... object is cycle free');
 memory_cycle_ok($bucket, '... bucket is (still) cycle free');
@@ -61,27 +65,17 @@ memory_cycle_ok($baz, '... baz is cycle free');
 memory_cycle_ok($bucket, '... bucket is (still) cycle free');
 memory_cycle_ok($riak, '... riak is cycle free');
 
-my $walk_foo = $bucket->linkwalk('foo', [[ 'not a buddy', '_' ]]);
-my $parts = $walk_foo->parts;
-is(scalar @{$parts}, 2, 'Got two parts back from linkwalking foo');
-
-my $resultset = $walk_foo->results;
+my $resultset = $bucket->linkwalk('foo', [[ 'not a buddy', '_' ]]);
 isa_ok($resultset, 'Data::Riak::ResultSet');
 is(scalar @{$resultset->results}, 2, 'Got two Riak::Results back from linkwalking foo');
 
-memory_cycle_ok($walk_foo, '... walk_foo is cycle free');
-memory_cycle_ok($parts, '... resultset is cycle free');
 memory_cycle_ok($resultset, '... resultset is cycle free');
 memory_cycle_ok($bucket, '... bucket is (still) cycle free');
 memory_cycle_ok($riak, '... riak is cycle free');
 
-my $deep_walk_foo = $bucket->linkwalk('bar', [ [ 'buddy', '_' ], [ $bucket_name, 'not a buddy', '_' ] ]);
-my $dw_resultset = $deep_walk_foo->results;
-my $dw_results = $dw_resultset->results;
-is(scalar @{$dw_results}, 2, 'Got two Riak::Results back from linkwalking bar');
+my $dw_results = $bucket->linkwalk('bar', [ [ 'buddy', '_' ], [ $bucket_name, 'not a buddy', '_' ] ]);
+is(scalar @{$dw_results->results}, 2, 'Got two Riak::Results back from linkwalking bar');
 
-memory_cycle_ok($deep_walk_foo, '... deep_walk_foo is cycle free');
-memory_cycle_ok($dw_resultset, '... dw_resultset is cycle free');
 memory_cycle_ok($dw_results, '... dw_results is cycle free');
 memory_cycle_ok($bucket, '... bucket is (still) cycle free');
 memory_cycle_ok($riak, '... riak is cycle free');

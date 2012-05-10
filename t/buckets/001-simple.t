@@ -4,17 +4,18 @@ use strict;
 use warnings;
 
 use Data::Dump;
+use Try::Tiny;
 
 use Test::Fatal;
 use Test::More;
 use Test::Data::Riak;
 
-use Data::Riak::HTTP;
+use Data::Riak;
 use Data::Riak::Bucket;
 
 skip_unless_riak;
 
-my $riak = Data::Riak::HTTP->new;
+my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
 my $bucket_name = create_test_bucket_name;
 
 my $bucket = Data::Riak::Bucket->new({
@@ -30,9 +31,12 @@ is($obj->name, 'foo', "Name property is inflated correctly");
 is($obj->bucket_name, $bucket_name, "Bucket name property is inflated correctly");
 
 $bucket->remove('foo');
-$obj = $bucket->get('foo');
-is($obj->value, "not found\n", "Calling for a value that doesn't exist returns not found");
-is($obj->code, "404", "Calling for a value that doesn't exist returns 404");
+try {
+    $bucket->get('foo')
+} catch {
+    is($_->value, "not found\n", "Calling for a value that doesn't exist returns not found");
+    is($_->code, "404", "Calling for a value that doesn't exist returns 404");
+};
 
 $bucket->add('foo', 'value of foo');
 $bucket->add('bar', 'value of bar', [{ bucket => $bucket_name, type => 'buddy', target =>'foo' }]);
@@ -47,33 +51,14 @@ is($foo->value, 'value of foo', 'correct value for foo');
 is($bar->value, 'value of bar', 'correct value for bar');
 is($baz->value, 'value of baz', 'correct value for baz');
 
-my $walk_foo = $bucket->linkwalk('foo', [[ 'not a buddy', '_' ]]);
-my $parts = $walk_foo->parts;
-is(scalar @{$parts}, 2, 'Got two parts back from linkwalking foo');
-like(exception { $walk_foo->result }, qr/^Can\'t give a single result for a multipart response/, 'Call to result from a multipart message fails');
-
-my $resultset = $walk_foo->results;
+my $resultset = $bucket->linkwalk('foo', [[ 'not a buddy', '_' ]]);
 isa_ok($resultset, 'Data::Riak::ResultSet');
 is(scalar @{$resultset->results}, 2, 'Got two Riak::Results back from linkwalking foo');
 
-my $deep_walk_foo = $bucket->linkwalk('bar', [ [ 'buddy', '_' ], [ $bucket_name, 'not a buddy', '_' ] ]);
-my $dw_resultset = $deep_walk_foo->results;
-my $dw_results = $dw_resultset->results;
-is(scalar @{$dw_results}, 2, 'Got two Riak::Results back from linkwalking bar');
+my $dw_results = $bucket->linkwalk('bar', [ [ 'buddy', '_' ], [ $bucket_name, 'not a buddy', '_' ] ]);
+is(scalar @{$dw_results->results}, 2, 'Got two Riak::Results back from linkwalking bar');
 
-my $first_dw = shift @{$dw_results};
-my $second_dw = shift @{$dw_results};
-
-# Have to if this because we can't sort the results
-if($first_dw->value eq 'value of bar') {
-    is($second_dw->value, 'value of baz', 'Both resultset entries were present');
-} elsif($first_dw->value eq 'value of baz') {
-    is($second_dw->value, 'value of bar', 'Both resultset entries were present');
-} else {
-    die 'Did not get the right results from the deep linkwalk';
-}
-
-#remove_test_bucket($bucket);
+remove_test_bucket($bucket);
 
 done_testing;
 
