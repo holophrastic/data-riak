@@ -66,7 +66,7 @@ sub get {
     return $self->riak->send_request({
         method => 'GET',
         uri => sprintf('buckets/%s/keys/%s', $self->name, $key)
-    });
+    })->first;
 }
 
 sub list_keys {
@@ -75,7 +75,7 @@ sub list_keys {
     my $result = $self->riak->send_request({
         method => 'GET',
         uri => sprintf('buckets/%s/keys?keys=true', $self->name)
-    });
+    })->first;
 
     return decode_json( $result->value )->{'keys'};
 }
@@ -105,7 +105,7 @@ sub props {
     return $self->riak->send_request({
         method => 'GET',
         uri => $self->name
-    });
+    })->first;
 }
 
 sub indexing {

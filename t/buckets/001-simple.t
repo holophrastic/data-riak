@@ -56,7 +56,7 @@ isa_ok($resultset, 'Data::Riak::ResultSet');
 is(scalar @{$resultset->results}, 2, 'Got two Riak::Results back from linkwalking foo');
 
 my $dw_results = $bucket->linkwalk('bar', [ [ 'buddy', '_' ], [ $bucket_name, 'not a buddy', '_' ] ]);
-is(scalar @{$dw_results->results}, 2, 'Got two Riak::Results back from linkwalking bar');
+is(scalar $dw_results->all, 2, 'Got two Riak::Results back from linkwalking bar');
 
 remove_test_bucket($bucket);
 

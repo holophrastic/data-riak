@@ -11,6 +11,10 @@ has results => (
     required => 1
 );
 
+sub first { (shift)->results->[0] }
+
+sub all { @{ (shift)->results } }
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 
