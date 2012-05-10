@@ -14,7 +14,7 @@ use Moose;
 
 has riak => (
     is => 'ro',
-    isa => 'Data::Riak::HTTP',
+    isa => 'Data::Riak',
     required => 1
 );
 
@@ -44,57 +44,40 @@ sub add {
         }
     }
 
-    my $request = Data::Riak::HTTP::Request->new({
+    return $self->riak->send_request({
         method => 'PUT',
         uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
         data => $value,
         links => $pack
     });
-    return $self->riak->send($request);
 }
 
 sub remove {
     my ($self, $key) = @_;
-    my $request = Data::Riak::HTTP::Request->new({
+    return $self->riak->send_request({
         method => 'DELETE',
         uri => sprintf('buckets/%s/keys/%s', $self->name, $key)
     });
-    return $self->riak->send($request);
 }
 
 sub get {
     my ($self, $key) = @_;
-    my $request = Data::Riak::HTTP::Request->new({
+
+    return $self->riak->send_request({
         method => 'GET',
         uri => sprintf('buckets/%s/keys/%s', $self->name, $key)
     });
-    my $response = $self->riak->send($request);
-    if($response->is_error) {
-        # don't just die here; return the busted object and let the caller handle it
-        return Data::Riak::Result->new({
-            riak => $self->riak,
-            http_message => $response->http_response
-        });
-    }
-    return $response->result;
 }
 
 sub list_keys {
     my $self = shift;
-    my $request = Data::Riak::HTTP::Request->new({
+
+    my $result = $self->riak->send_request({
         method => 'GET',
         uri => sprintf('buckets/%s/keys?keys=true', $self->name)
     });
 
-    my $response = $self->riak->send($request);
-    if($response->is_error) {
-        # don't just die here; return the busted object and let the caller handle it
-        return Data::Riak::Result->new({
-            riak => $self->riak,
-            http_message => $response->http_response
-        });
-    }
-    return decode_json( $response->result->value )->{'keys'};
+    return decode_json( $result->value )->{'keys'};
 }
 
 sub remove_all {
@@ -119,12 +102,10 @@ sub linkwalk {
 sub props {
     my $self = shift;
 
-    my $request = Data::Riak::HTTP::Request->new({
+    return $self->riak->send_request({
         method => 'GET',
         uri => $self->name
     });
-
-    return $self->riak->send($request);
 }
 
 sub indexing {
@@ -140,14 +121,12 @@ sub indexing {
         $data->{props}->{precommit}->{fun} = undef;
     };
 
-    my $request = Data::Riak::HTTP::Request->new({
+    return $self->riak->send_request({
         method => 'PUT',
         content_type => 'application/json',
         uri => $self->name,
         data => $data
     });
-
-    return $self->riak->send($request);
 }
 
 __PACKAGE__->meta->make_immutable;
