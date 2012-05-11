@@ -33,28 +33,6 @@ has name => (
     } }
 );
 
-has value => (
-    is => 'rw',
-    isa => 'Str',
-    lazy => 1,
-    clearer => '_clear_value',
-    default => sub { {
-        my $self = shift;
-        return $self->http_message->content;
-    } }
-);
-
-has code => (
-    is => 'ro',
-    isa => 'Int',
-    lazy => 1,
-    clearer => '_clear_code',
-    default => sub { {
-        my $self = shift;
-        return $self->http_message->code;
-    } }
-);
-
 
 has links => (
     is => 'rw',
@@ -69,7 +47,11 @@ has links => (
 has http_message => (
     is => 'rw',
     isa => 'HTTP::Message',
-    required => 1
+    required => 1,
+    handles => {
+        'code'  => 'code',
+        'value' => 'content'
+    }
 );
 
 # if it's been changed on the server, discard those changes and update the object
@@ -83,7 +65,7 @@ sub sync {
     $self->http_message($new->http_message);
 
     # and clear any of the attributes that got inflated already
-    $self->_clear_lazy;
+    $self->_clear_links;
 }
 
 # if it's been changed locally, save those changes to the server
@@ -104,13 +86,6 @@ sub linkwalk {
         object => $self->name,
         params => $params
     });
-}
-
-sub _clear_lazy {
-    my $self = shift;
-    $self->_clear_code;
-    $self->_clear_links;
-    $self->_clear_value;
 }
 
 __PACKAGE__->meta->make_immutable;
