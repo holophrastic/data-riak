@@ -54,16 +54,45 @@ $bucket->add('p5', $text3);
 my $mr = Data::Riak::MapReduce->new({
     riak => $riak,
     inputs => [ [ $bucket_name, "p1" ], [ $bucket_name, "p2" ], [ $bucket_name, "p5" ] ],
-    map => {
+    'map' => {
         language => 'javascript',
-        source => 'function(v) { var m = v.values[0].data.toLowerCase().match(/\w*/g); var r = []; for(var i in m) { if(m[i] != "") { var o = {}; o[m[i]] = 1; r.push(o); } } return r; } '
+        source => q[
+            function(v) {
+              var m = v.values[0].data.toLowerCase().match(/\w*/g);
+              var r = [];
+              for(var i in m) {
+                if(m[i] != '') {
+                  var o = {};
+                  o[m[i]] = 1;
+                  r.push(o);
+                }
+              }
+              return r;
+            }
+        ]
     },
-    reduce => {
+    'reduce' => {
         language => 'javascript',
-        source => 'function(v) { var r = {}; for(var i in v) { for(var w in v[i]) { if(w in r) r[w] += v[i][w];       else r[w] = v[i][w]; } } return [r]; }'
+        source => q[
+        function(v) {
+          var r = {};
+          for(var i in v) {
+            for(var w in v[i]) {
+              if(w in r) r[w] += v[i][w];
+              else r[w] = v[i][w];
+            }
+          }
+          return [r];
+        }
+        ]
     }
 });
-#my $results = $mr->mapreduce;
+my $results = $mr->mapreduce;
+
+foreach my $result ( $results->all ) {
+    use Data::Dumper; warn Dumper(JSON::XS->new->decode( $result->value ));
+}
+
 #ddx($results);
 #ddx($mr);
 #ok $results->http_response->content;

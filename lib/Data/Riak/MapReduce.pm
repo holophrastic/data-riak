@@ -66,23 +66,17 @@ sub mapreduce {
     my $uri = "mapred";
     $uri .= "?chunked=true" if($self->config->{chunked});
 
-    my $query = {};
-    my $data = {};
-    $data->{inputs} = $self->inputs;
-    $query->{query}->{map} = $self->map if($self->map);
-    $query->{query}->{reduce} = $self->reduce if($self->reduce);
-    #$query->{query}->{link} = $self->link if($self->link);
-    push @{$data->{query}}, $query;
-    #Data::Riak::HTTP::MapReduce::MapReduceComponent->new($raw_query->{map})->block if($raw_query->{map});
-    #$query->{query}->{reduce} = Data::Riak::HTTP::MapReduce::MapReduceComponent->new($raw_query->{reduce})->block if($raw_query->{reduce});
-    #$query->{query}->{link} = $raw_query->{link} if($raw_query->{link});
-
     return $self->riak->send_request({
         content_type => 'application/json',
         method => 'POST',
         uri => $uri,
-#        data => $query
-        data => encode_json($data),
+        data => encode_json({
+            inputs => $self->inputs,
+            query => [
+                { 'map'    => $self->map },
+                { 'reduce' => $self->reduce },
+            ]
+        })
     });
 }
 
