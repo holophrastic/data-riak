@@ -5,7 +5,7 @@ use warnings;
 
 use Moose;
 
-use overload '""' => 'to_string', fallback => 1;
+use overload '""' => 'as_string', fallback => 1;
 
 my $_deconstruct_parts;
 
@@ -29,7 +29,7 @@ has 'http_response' => (
         value      => 'content',
         is_success => 'is_success',
         is_error   => 'is_error',
-        to_string  => 'to_string',
+        as_string  => 'as_string',
     }
 );
 
