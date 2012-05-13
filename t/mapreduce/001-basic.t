@@ -16,6 +16,7 @@ skip_unless_riak;
 my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
 
 # Implement the example from the Riak docs.
+# http://wiki.basho.com/MapReduce.html#MapReduce-via-the-HTTP-API
 
 my $bucket_name = create_test_bucket_name;
 
@@ -87,15 +88,38 @@ my $mr = Data::Riak::MapReduce->new({
         ]
     }
 });
+
 my $results = $mr->mapreduce;
+isa_ok($results, 'Data::Riak::ResultSet');
 
-foreach my $result ( $results->all ) {
-    use Data::Dumper; warn Dumper(JSON::XS->new->decode( $result->value ));
-}
+my $result = $results->first;
+isa_ok($result, 'Data::Riak::Result');
 
-#ddx($results);
-#ddx($mr);
-#ok $results->http_response->content;
+my $value = JSON::XS->new->decode( $result->value );
+is_deeply(
+    $value,
+    [
+      {
+        'dipped' => 1, 'on' => 2, 'alice' => 3, 'ran' => 1, 'day' => 1, 'own' => 1, 'deep' => 1,
+        'trouble' => 1, 'what' => 1, 'conversations' => 1, 'bank' => 1, 'moment' => 1,
+        'daisies' => 1, 'but' => 1, 'some' => 1, 'with' => 1, 'suddenly' => 3, 'and' => 5,
+        'of' => 5, 'do' => 1, 'into' => 1, 'is' => 1, 'found' => 1, 'she' => 4, 'herself' => 2,
+        'stupid' => 1, 'to' => 3, 'making' => 1, 'think' => 1, 'her' => 5, 'when' => 1,
+        'it' => 2, 'sleepy' => 1, 'hole' => 1, 'tunnel' => 1, 'then' => 1, 'reading' => 1,
+        'hot' => 1, 'thought' => 1, 'the' => 8, 'made' => 1, 'way' => 1, 'a' => 6, 'would' => 1,
+        'no' => 1, 'twice' => 1, 'like' => 1, 'white' => 1, 'or' => 3, 'went' => 1, 'in' => 2,
+        'could' => 1, 'sitting' => 1, 'down' => 2, 'about' => 1, 'before' => 1, 'so' => 2,
+        'once' => 1, 'very' => 3, 'sister' => 2, 'for' => 2, 'by' => 2, 'chain' => 1, 'be' => 1,
+        'daisy' => 1, 'feel' => 1, 'whether' => 1, 'eyes' => 1, 'mind' => 1, 'pink' => 1, 'up' => 1,
+        'having' => 1, 'considering' => 1, 'conversation' => 1, 'close' => 1, 'pleasure' => 1,
+        'use' => 1, 'straight' => 1, 'picking' => 1, 'tired' => 1, 'peeped' => 1, 'get' => 1,
+        'had' => 3, 'beginning' => 1, 'without' => 1, 'getting' => 1, 'well' => 2, 'as' => 2,
+        'was' => 3, 'rabbit' => 2, 'book' => 2, 'pictures' => 2, 'falling' => 1, 'nothing' => 1,
+        'stopping' => 1, 'worth' => 1, 'not' => 1, 'that' => 1,
+      }
+    ],
+    '... got the expected results'
+);
 
 remove_test_bucket($bucket);
 
