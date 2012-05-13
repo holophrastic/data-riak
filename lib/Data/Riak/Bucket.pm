@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use HTTP::Headers::ActionPack;
-use HTTP::Headers::ActionPack::Link;
+use HTTP::Headers::ActionPack::LinkHeader;
 use HTTP::Headers::ActionPack::LinkList;
 
 use URL::Encode qw/url_encode/;
@@ -30,11 +30,11 @@ sub add {
     my $pack = HTTP::Headers::ActionPack::LinkList->new;
     if($links) {
         foreach my $link (@{$links}) {
-            if(blessed $link && $link->isa('HTTP::Headers::ActionPack::Link')) {
+            if(blessed $link && $link->isa('HTTP::Headers::ActionPack::LinkHeader')) {
                 $pack->add($link);
             } else {
                 my $link_url = $link->{url} || sprintf('/buckets/%s/keys/%s', $link->{bucket} || $self->name, $link->{target});
-                my $created_link = HTTP::Headers::ActionPack::Link->new(
+                my $created_link = HTTP::Headers::ActionPack::LinkHeader->new(
                     $link_url => (
                         riaktag => url_encode($link->{type})
                     )
