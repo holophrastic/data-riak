@@ -26,10 +26,9 @@ DATA_RIAK_HTTP_HOST, and defaults to 127.0.0.1.
 has host => (
     is => 'ro',
     isa => 'Str',
-    default => sub { {
-        my $return = $ENV{'DATA_RIAK_HTTP_HOST'} || '127.0.0.1';
-        return $return;
-    } }
+    default => sub {
+        $ENV{'DATA_RIAK_HTTP_HOST'} || '127.0.0.1';
+    }
 );
 
 =attr port
@@ -42,10 +41,9 @@ variable DATA_RIAK_HTTP_PORT, and defaults to 8098.
 has port => (
     is => 'ro',
     isa => 'Int',
-    default => sub { {
-        my $return = $ENV{'DATA_RIAK_HTTP_PORT'} || '8098';
-        return $return;
-    } }
+    default => sub {
+        $ENV{'DATA_RIAK_HTTP_PORT'} || '8098';
+    }
 );
 
 =attr timeout
@@ -58,10 +56,9 @@ via the environment variable DATA_RIAK_HTTP_TIMEOUT, and defaults to 15.
 has timeout => (
     is => 'ro',
     isa => 'Int',
-    default => sub { {
-        my $return = $ENV{'DATA_RIAK_HTTP_TIMEOUT'} || '15';
-        return $return;
-    } }
+    default => sub {
+        $ENV{'DATA_RIAK_HTTP_TIMEOUT'} || '15';
+    }
 );
 
 =method ping

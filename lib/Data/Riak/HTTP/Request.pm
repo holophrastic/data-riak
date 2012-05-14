@@ -30,9 +30,9 @@ has links => (
     is => 'ro',
     isa => 'HTTP::Headers::ActionPack::LinkList',
     # TODO: make this coerce
-    default => sub { {
+    default => sub {
         return HTTP::Headers::ActionPack::LinkList->new;
-    } }
+    }
 );
 
 has content_type => (

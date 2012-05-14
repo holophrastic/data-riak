@@ -13,11 +13,11 @@ has 'parts' => (
     is => 'ro',
     isa => 'ArrayRef[HTTP::Message]',
     lazy => 1,
-    default => sub { {
+    default => sub {
         my $self = shift;
         my @parts = $_deconstruct_parts->( $self->http_response );
         return \@parts;
-    } }
+    }
 );
 
 has 'http_response' => (

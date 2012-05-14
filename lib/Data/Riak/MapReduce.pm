@@ -19,45 +19,31 @@ has config => (
     is => 'ro',
     isa => 'HashRef',
     lazy => 1,
-    default => sub { {
-        my $self = shift;
-        return {};
-    } }
+    default => sub { +{} }
 );
 
 has map => (
     is => 'ro',
     isa => 'HashRef',
-    default => sub { {
-        my $self = shift;
-        return {};
-    } }
+    default => sub { +{} }
 );
 
 has reduce => (
     is => 'ro',
     isa => 'HashRef',
-    default => sub { {
-        my $self = shift;
-        return {};
-    } }
+    default => sub { +{} }
 );
 
 has link => (
     is => 'ro',
     isa => 'HashRef',
-    default => sub { {
-        my $self = shift;
-        return {};
-    } }
+    default => sub { +{} }
 );
 
 has inputs => (
     is => 'ro',
     isa => 'ArrayRef',
-    default => sub { {
-        return [];
-    } }
+    default => sub { [] }
 );
 
 sub mapreduce {
