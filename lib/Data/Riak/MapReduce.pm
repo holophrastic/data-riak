@@ -5,9 +5,7 @@ use warnings;
 
 use Moose;
 
-use JSON::XS;
-
-use Data::Riak::MapReduce::MapReduceComponent;
+use JSON::XS qw/encode_json/;
 
 has riak => (
     is => 'ro',
@@ -15,42 +13,35 @@ has riak => (
     required => 1
 );
 
-has config => (
-    is => 'ro',
-    isa => 'HashRef',
-    lazy => 1,
-    default => sub { +{} }
-);
-
-has map => (
-    is => 'ro',
-    isa => 'HashRef',
-    default => sub { +{} }
-);
-
-has reduce => (
-    is => 'ro',
-    isa => 'HashRef',
-    default => sub { +{} }
-);
-
-has link => (
-    is => 'ro',
-    isa => 'HashRef',
-    default => sub { +{} }
-);
-
 has inputs => (
     is => 'ro',
-    isa => 'ArrayRef',
-    default => sub { [] }
+    isa => 'ArrayRef | Str',
+    required => 1
+);
+
+has map_phase => (
+    is => 'ro',
+    isa => 'HashRef',
+    predicate => 'has_map_phase'
+);
+
+has reduce_phase => (
+    is => 'ro',
+    isa => 'HashRef',
+    predicate => 'has_reduce_phase'
+);
+
+has link_phase => (
+    is => 'ro',
+    isa => 'HashRef',
+    predicate => 'has_link_phase'
 );
 
 sub mapreduce {
-    my ($self, $raw_query) = @_;
+    my ($self, %options) = @_;
 
     my $uri = "mapred";
-    $uri .= "?chunked=true" if($self->config->{chunked});
+    $uri .= "?chunked=true" if($options{'chunked'});
 
     return $self->riak->send_request({
         content_type => 'application/json',
@@ -59,8 +50,9 @@ sub mapreduce {
         data => encode_json({
             inputs => $self->inputs,
             query => [
-                { 'map'    => $self->map },
-                { 'reduce' => $self->reduce },
+                ($self->has_map_phase ? { 'map' => $self->map_phase } : ()),
+                ($self->has_reduce_phase ? { 'reduce' => $self->reduce_phase } : ()),
+                ($self->has_link_phase ? { 'link' => $self->link_phase } : ()),
             ]
         })
     });
