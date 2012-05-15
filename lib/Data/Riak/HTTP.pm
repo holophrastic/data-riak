@@ -106,7 +106,8 @@ sub _send {
 
     my $uri = sprintf('http://%s:%s/%s', $self->host, $self->port, $request->uri);
     my $headers = HTTP::Headers->new(
-        'Content-Type' => $request->content_type,
+        ($request->method eq 'GET' ? ('Accept' => $request->accept) : ()),
+        ($request->method eq 'POST' || $request->method eq 'PUT' ? ('Content-Type' => $request->content_type) : ()),
     );
 
     if(my $links = $request->links) {
