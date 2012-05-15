@@ -75,7 +75,7 @@ has http_message => (
     isa => 'HTTP::Message',
     required => 1,
     handles => {
-        'code'  => 'code',
+        'status_code' => 'code',
         'value' => 'content'
     }
 );
