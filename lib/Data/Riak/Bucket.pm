@@ -54,7 +54,10 @@ sub add {
         method => 'PUT',
         uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
         data => $value,
-        links => $pack
+        links => $pack,
+        (exists $opts->{'content_type'}
+            ? (content_type => $opts->{'content_type'})
+            : ())
     });
 }
 
@@ -67,12 +70,17 @@ sub remove {
 }
 
 sub get {
-    my ($self, $key) = @_;
+    my ($self, $key, $opts) = @_;
 
-    return $self->riak->send_request({
+    $opts ||= {};
+
+    my $resultset = $self->riak->send_request({
         method => 'GET',
-        uri => sprintf('buckets/%s/keys/%s', $self->name, $key)
-    })->first;
+        uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
+        (exists $opts->{'accept'}
+            ? (accept => $opts->{'accept'})
+            : ())
+    });
 }
 
 sub list_keys {
