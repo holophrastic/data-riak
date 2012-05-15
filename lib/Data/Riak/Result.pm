@@ -11,13 +11,24 @@ has riak => (
     required => 1
 );
 
+has location => (
+    is => 'ro',
+    isa => 'Str',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        return $self->http_message->request->uri->as_string if $self->http_message->can('request');
+        return $self->http_message->header('location') || die "Cannot determine location from " . $self->http_message;
+    }
+);
+
 has bucket_name => (
     is => 'ro',
     isa => 'Str',
     lazy => 1,
     default => sub {
         my $self = shift;
-        my @uri_parts = split /\//, $self->http_message->request->uri;
+        my @uri_parts = split /\//, $self->location;
         return $uri_parts[$#uri_parts - 2];
     }
 );
@@ -28,7 +39,7 @@ has name => (
     lazy => 1,
     default => sub {
         my $self = shift;
-        my @uri_parts = split /\//, $self->http_message->request->uri;
+        my @uri_parts = split /\//, $self->location;
         return $uri_parts[$#uri_parts];
     }
 );
