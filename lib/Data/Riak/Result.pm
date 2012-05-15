@@ -5,6 +5,7 @@ use warnings;
 
 use Moose;
 
+use URI;
 use URL::Encode qw/url_decode/;
 use HTTP::Headers::ActionPack::LinkList;
 
@@ -16,12 +17,12 @@ has riak => (
 
 has location => (
     is => 'ro',
-    isa => 'Str',
+    isa => 'URI',
     lazy => 1,
     default => sub {
         my $self = shift;
-        return $self->http_message->request->uri->as_string if $self->http_message->can('request');
-        return $self->http_message->header('location') || die "Cannot determine location from " . $self->http_message;
+        return $self->http_message->request->uri if $self->http_message->can('request');
+        return URI->new( $self->http_message->header('location') || die "Cannot determine location from " . $self->http_message );
     }
 );
 
@@ -31,7 +32,7 @@ has bucket_name => (
     lazy => 1,
     default => sub {
         my $self = shift;
-        my @uri_parts = split /\//, $self->location;
+        my @uri_parts = split /\//, $self->location->path;
         return $uri_parts[$#uri_parts - 2];
     }
 );
@@ -42,7 +43,7 @@ has name => (
     lazy => 1,
     default => sub {
         my $self = shift;
-        my @uri_parts = split /\//, $self->location;
+        my @uri_parts = split /\//, $self->location->path;
         return $uri_parts[$#uri_parts];
     }
 );
