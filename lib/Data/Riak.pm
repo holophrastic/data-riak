@@ -6,6 +6,8 @@ use warnings;
 
 use Moose;
 
+use JSON::XS qw/decode_json/;
+
 use Data::Riak::Result;
 use Data::Riak::ResultSet;
 use Data::Riak::Bucket;
@@ -90,9 +92,11 @@ and convenience.
 
 sub _buckets {
     my $self = shift;
-    return $self->send_request({
-        method => 'GET', uri => '/buckets?buckets=true'
-    })->first;
+    return decode_json(
+        $self->send_request({
+            method => 'GET', uri => '/buckets?buckets=true'
+        })->first->value
+    );
 }
 
 =method bucket ($name)
