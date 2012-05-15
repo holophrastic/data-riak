@@ -8,7 +8,7 @@ use HTTP::Headers::ActionPack::LinkHeader;
 use HTTP::Headers::ActionPack::LinkList;
 
 use URL::Encode qw/url_encode/;
-use JSON::XS qw/decode_json/;
+use JSON::XS qw/decode_json encode_json/;
 
 use Moose;
 
@@ -125,7 +125,7 @@ sub indexing {
         method => 'PUT',
         content_type => 'application/json',
         uri => $self->name,
-        data => $data
+        data => encode_json($data)
     });
 }
 
