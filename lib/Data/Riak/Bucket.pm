@@ -74,16 +74,16 @@ sub get {
 
     $opts ||= {};
 
-    my $resultset = $self->riak->send_request({
+    confess "This method does not handle mutlipart/mixed responses"
+        if exists $opts->{'accept'} && $opts->{'accept'} eq 'multipart/mixed';
+
+    return $self->riak->send_request({
         method => 'GET',
         uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
         (exists $opts->{'accept'}
             ? (accept => $opts->{'accept'})
             : ())
-    });
-
-    return $resultset if exists $opts->{'accept'} && $opts->{'accept'} eq 'multipart/mixed';
-    return $resultset->first;
+    })->first;
 }
 
 sub list_keys {
