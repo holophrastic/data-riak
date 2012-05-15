@@ -31,6 +31,12 @@ is($obj->value, 'bar', 'Check the value immediately after insertion');
 is($obj->name, 'foo', "Name property is inflated correctly");
 is($obj->bucket_name, $bucket_name, "Bucket name property is inflated correctly");
 
+try {
+    $bucket->get('foo' => { accept => 'application/json' });
+} catch {
+    is($_->code, "406", "asking for an incompatible content type fails with a 406");
+};
+
 $bucket->remove('foo');
 try {
     $bucket->get('foo')
