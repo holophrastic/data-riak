@@ -50,15 +50,29 @@ sub add {
         }
     }
 
-    return $self->riak->send_request({
+    # TODO:
+    # need to support other headers
+    #   X-Riak-Vclock if the object already exists, the vector clock attached to the object when read.
+    #   X-Riak-Meta-* - any additional metadata headers that should be stored with the object.
+    #   X-Riak-Index-* - index entries under which this object should be indexed. Read more about Secondary Indexing.
+    # see http://wiki.basho.com/HTTP-Store-Object.html
+    # - SL
+
+    my $resultset = $self->riak->send_request({
         method => 'PUT',
         uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
         data => $value,
         links => $pack,
         (exists $opts->{'content_type'}
             ? (content_type => $opts->{'content_type'})
-            : ())
+            : ()),
+        (exists $opts->{'query'}
+            ? (query => $opts->{'query'})
+            : ()),
     });
+
+    return $resultset->first if $resultset;
+    return;
 }
 
 sub remove {
