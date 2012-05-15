@@ -40,6 +40,12 @@ has content_type => (
     default => 'text/plain'
 );
 
+has accept => (
+    is => 'ro',
+    isa => 'Str',
+    default => '*/*'
+);
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 
