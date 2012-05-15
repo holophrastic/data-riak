@@ -37,6 +37,12 @@ try {
     is($_->code, "406", "asking for an incompatible content type fails with a 406");
 };
 
+is_deeply(
+    $bucket->list_keys,
+    ['foo'],
+    '... got the keys we expected'
+);
+
 $bucket->remove('foo');
 try {
     $bucket->get('foo')
@@ -45,10 +51,15 @@ try {
     is($_->code, "404", "Calling for a value that doesn't exist returns 404");
 };
 
-$bucket->add('foo', 'value of foo');
 $bucket->add('bar', 'value of bar', { links => [{ bucket => $bucket_name, type => 'buddy', target =>'foo' }] });
 $bucket->add('baz', 'value of baz', { links => [{ type => 'buddy', target =>'foo' }] });
 $bucket->add('foo', 'value of foo', { links => [{ type => 'not a buddy', target =>'bar' }, { type => 'not a buddy', target =>'baz' }] });
+
+is_deeply(
+    [ sort @{ $bucket->list_keys } ],
+    ['bar', 'baz', 'foo'],
+    '... got the keys we expected'
+);
 
 my $foo = $bucket->get('foo');
 my $bar = $bucket->get('bar');
