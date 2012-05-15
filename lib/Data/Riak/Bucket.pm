@@ -76,10 +76,16 @@ sub add {
 }
 
 sub remove {
-    my ($self, $key) = @_;
+    my ($self, $key, $opts) = @_;
+
+    $opts ||= {};
+
     return $self->riak->send_request({
         method => 'DELETE',
-        uri => sprintf('buckets/%s/keys/%s', $self->name, $key)
+        uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
+        (exists $opts->{'query'}
+            ? (query => $opts->{'query'})
+            : ()),
     });
 }
 
@@ -88,7 +94,7 @@ sub get {
 
     $opts ||= {};
 
-    confess "This method does not handle mutlipart/mixed responses"
+    confess "This method does not support multipart/mixed responses"
         if exists $opts->{'accept'} && $opts->{'accept'} eq 'multipart/mixed';
 
     return $self->riak->send_request({
@@ -96,7 +102,10 @@ sub get {
         uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
         (exists $opts->{'accept'}
             ? (accept => $opts->{'accept'})
-            : ())
+            : ()),
+        (exists $opts->{'query'}
+            ? (query => $opts->{'query'})
+            : ()),
     })->first;
 }
 
