@@ -5,6 +5,9 @@ use warnings;
 
 use Moose;
 
+use URL::Encode qw/url_decode/;
+use HTTP::Headers::ActionPack::LinkList;
+
 has riak => (
     is => 'ro',
     isa => 'Data::Riak',
@@ -47,10 +50,24 @@ has name => (
 
 has links => (
     is => 'rw',
-    isa => 'Str',
+    isa => 'HTTP::Headers::ActionPack::LinkList',
     lazy => 1,
     clearer => '_clear_links',
-    default => sub { '' }
+    default => sub {
+        my $self = shift;
+        my $link_header = $self->http_message->header('link');
+        return HTTP::Headers::ActionPack::LinkList->new unless $link_header;
+        my $links = HTTP::Headers::ActionPack::LinkList->new_from_string( $link_header );
+        # NOTE:
+        # we do the inverse of this in
+        # &Data::Riak::Bucket::add
+        # - SL
+        foreach my $link ( $links->iterable ) {
+            $link->params->{'riaktag'} = url_decode( $link->params->{'riaktag'} )
+                if exists $link->params->{'riaktag'};
+        }
+        return $links;
+    }
 );
 
 has http_message => (
