@@ -101,7 +101,7 @@ sub save {
         name => $self->bucket_name,
         riak => $self->riak
     });
-    return $bucket->add($self->name, $self->value, $self->links);
+    return $bucket->add($self->name, $self->value, $self->links->items);
 }
 
 sub linkwalk {
