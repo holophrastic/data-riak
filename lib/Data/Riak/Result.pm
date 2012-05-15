@@ -55,9 +55,8 @@ has links => (
     clearer => '_clear_links',
     default => sub {
         my $self = shift;
-        my $link_header = $self->http_message->header('link');
-        return HTTP::Headers::ActionPack::LinkList->new unless $link_header;
-        my $links = HTTP::Headers::ActionPack::LinkList->new_from_string( $link_header );
+        my $links = $self->http_message->header('link');
+        return HTTP::Headers::ActionPack::LinkList->new unless $links;
         # NOTE:
         # we do the inverse of this in
         # &Data::Riak::Bucket::add
@@ -76,9 +75,21 @@ has http_message => (
     required => 1,
     handles => {
         'status_code' => 'code',
-        'value' => 'content'
+        'value' => 'content',
+        'header' => 'header',
+        'headers' => 'headers',
+        # curried delegation
+        'content_type' => [ 'header' => 'content-type' ],
+        'vector_clock' => [ 'header' => 'x-riak-vclock' ],
+        'etag' => [ 'header' => 'etag' ],
+        'last_modified' => [ 'header' => 'last_modified' ]
     }
 );
+
+sub BUILD {
+    my $self = shift;
+    HTTP::Headers::ActionPack->new->inflate( $self->http_message->headers );
+}
 
 # if it's been changed on the server, discard those changes and update the object
 sub sync {

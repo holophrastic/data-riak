@@ -110,6 +110,9 @@ sub test_map_reduce {
     my $result = $results->first;
     isa_ok($result, 'Data::Riak::Result');
 
+    isa_ok($result->content_type, 'HTTP::Headers::ActionPack::MediaType');
+    is($result->content_type->type, 'application/json', '... got the right content type');
+
     my $value = JSON::XS->new->decode( $result->value );
     is_deeply(
         $value,
@@ -169,6 +172,9 @@ test_map_reduce(
 
     my $result = $results->first;
     isa_ok($result, 'Data::Riak::Result');
+
+    isa_ok($result->content_type, 'HTTP::Headers::ActionPack::MediaType');
+    is($result->content_type->type, 'application/json', '... got the right content type');
 
     my $value = JSON::XS->new->decode( $result->value );
     is_deeply(
