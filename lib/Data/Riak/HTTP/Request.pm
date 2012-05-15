@@ -5,7 +5,6 @@ use warnings;
 
 use Moose;
 
-use HTTP::Headers::ActionPack;
 use HTTP::Headers::ActionPack::LinkList;
 
 has method => (
