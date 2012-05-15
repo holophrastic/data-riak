@@ -81,6 +81,9 @@ sub get {
             ? (accept => $opts->{'accept'})
             : ())
     });
+
+    return $resultset if exists $opts->{'accept'} && $opts->{'accept'} eq 'multipart/mixed';
+    return $resultset->first;
 }
 
 sub list_keys {
