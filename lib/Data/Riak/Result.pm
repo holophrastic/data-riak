@@ -92,6 +92,11 @@ sub BUILD {
     HTTP::Headers::ActionPack->new->inflate( $self->http_message->headers );
 }
 
+sub create_link {
+    my ($self, %opts) = @_;
+    return { bucket => $self->bucket_name, target => $self->name, %opts };
+}
+
 # if it's been changed on the server, discard those changes and update the object
 sub sync {
     my $self = shift;
