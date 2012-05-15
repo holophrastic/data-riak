@@ -30,6 +30,8 @@ has 'http_response' => (
         is_success => 'is_success',
         is_error   => 'is_error',
         as_string  => 'as_string',
+        header     => 'header',
+        headers    => 'headers'
     }
 );
 
