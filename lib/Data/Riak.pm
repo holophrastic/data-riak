@@ -114,18 +114,6 @@ sub bucket {
     })
 }
 
-# convenience method
-sub mapreduce {
-    my ($self, $args) = @_;
-    my $config = $args->{config};
-    my $query = $args->{query};
-
-    $config->{riak} ||= $self;
-
-    my $mr = Data::Riak::MapReduce->new($config);
-    return $mr->mapreduce($query);
-}
-
 sub linkwalk {
     my ($self, $args) = @_;
     my $object = $args->{object} || die 'You must have an object to linkwalk';
