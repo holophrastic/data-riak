@@ -98,6 +98,12 @@ sub sync {
         name => $self->bucket_name,
         riak => $self->riak
     });
+
+    # TODO:
+    # need to check here for 304 responses
+    # http://wiki.basho.com/HTTP-Fetch-Object.html
+    # once we add in conditional fetching
+    # - SL
     my $new = $bucket->get($self->name);
     $self->http_message($new->http_message);
 
