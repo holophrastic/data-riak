@@ -23,6 +23,9 @@ my $bucket = Data::Riak::Bucket->new({
     riak => $riak
 });
 
+my $props = $bucket->props;
+is(ref $props, 'HASH', '... got back a HASH ref');
+
 $bucket->add('foo', 'bar');
 
 my $obj = $bucket->get('foo');

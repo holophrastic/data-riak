@@ -120,10 +120,12 @@ sub linkwalk {
 sub props {
     my $self = shift;
 
-    return $self->riak->send_request({
+    my $result = $self->riak->send_request({
         method => 'GET',
-        uri => $self->name
+        uri => sprintf('buckets/%s/props', $self->name)
     })->first;
+
+    return decode_json( $result->value )->{'props'};
 }
 
 sub indexing {
