@@ -32,17 +32,25 @@ is(exception {
 my $obj = $bucket->get('foo');
 isa_ok($obj, 'Data::Riak::Result');
 
-my $value = $obj->value;
-is($value, 'bar', 'Original value is bar');
+is($obj->name, 'foo', '... the name of the item is foo');
+is($obj->bucket_name, $bucket->name, '... the name of the bucket is as expected');
+is($obj->location, ($obj->riak->base_uri . 'buckets/' . $bucket->name . '/keys/foo'), '... got the right location of the object');
+is($obj->value, 'bar', '... the value is bar');
 
 $obj->value('baz');
-$obj->save;
+is($obj->value, 'baz', '... the content was changed');
+
+is(exception {
+    $obj->save;
+}, undef, '... got no exception saving element in the bucket');
 
 my $obj2 = $bucket2->get('foo');
 isa_ok($obj2, 'Data::Riak::Result');
 
-my $value2 = $obj2->value;
-is($value2, 'baz', 'Got updated value');
+is($obj2->name, 'foo', '... the name of the item is foo');
+is($obj2->bucket_name, $bucket->name, '... the name of the bucket is as expected');
+is($obj2->location, ($obj2->riak->base_uri . 'buckets/' . $bucket->name . '/keys/foo'), '... got the right location of the object');
+is($obj2->value, 'baz', '... the updated value is baz');
 
 remove_test_bucket($bucket);
 

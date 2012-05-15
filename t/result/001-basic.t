@@ -24,8 +24,13 @@ is(exception {
 my $obj = $bucket->get('foo');
 isa_ok($obj, 'Data::Riak::Result');
 
-my $value = $obj->value;
-is($value, 'bar', 'Value is bar');
+is($obj->name, 'foo', '... the name of the item is foo');
+is($obj->bucket_name, $bucket->name, '... the name of the bucket is as expected');
+is($obj->location, ($obj->riak->base_uri . 'buckets/' . $bucket->name . '/keys/foo'), '... got the right location of the object');
+is($obj->value, 'bar', '... the value is bar');
+
+is($obj->status_code, 200, '... got the right status code');
+isa_ok($obj->http_message, 'HTTP::Message');
 
 is($obj->riak, $bucket->riak, 'Derived host is correct');
 
