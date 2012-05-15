@@ -25,11 +25,13 @@ has name => (
 );
 
 sub add {
-    my ($self, $key, $value, $links) = @_;
+    my ($self, $key, $value, $opts) = @_;
+
+    $opts ||= {};
 
     my $pack = HTTP::Headers::ActionPack::LinkList->new;
-    if($links) {
-        foreach my $link (@{$links}) {
+    if($opts->{'links'}) {
+        foreach my $link (@{$opts->{'links'}}) {
             if(blessed $link && $link->isa('HTTP::Headers::ActionPack::LinkHeader')) {
                 $pack->add($link);
             } else {

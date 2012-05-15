@@ -47,9 +47,9 @@ memory_cycle_ok($bucket, '... bucket is (still) cycle free');
 memory_cycle_ok($riak, '... riak is cycle free');
 
 $bucket->add('foo', 'value of foo');
-$bucket->add('bar', 'value of bar', [{ bucket => $bucket_name, type => 'buddy', target =>'foo' }]);
-$bucket->add('baz', 'value of baz', [{ type => 'buddy', target =>'foo' }]);
-$bucket->add('foo', 'value of foo', [{ type => 'not a buddy', target =>'bar' }, { type => 'not a buddy', target =>'baz' }]);
+$bucket->add('bar', 'value of bar', { links => [{ bucket => $bucket_name, type => 'buddy', target =>'foo' }] });
+$bucket->add('baz', 'value of baz', { links => [{ type => 'buddy', target =>'foo' }] });
+$bucket->add('foo', 'value of foo', { links => [{ type => 'not a buddy', target =>'bar' }, { type => 'not a buddy', target =>'baz' }] });
 
 my $foo = $bucket->get('foo');
 my $bar = $bucket->get('bar');
