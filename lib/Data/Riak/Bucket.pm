@@ -36,6 +36,10 @@ sub add {
                 my $link_url = $link->{url} || sprintf('/buckets/%s/keys/%s', $link->{bucket} || $self->name, $link->{target});
                 my $created_link = HTTP::Headers::ActionPack::LinkHeader->new(
                     $link_url => (
+                        # NOTE:
+                        # we do the inverse of this in
+                        # &Data::Riak::Result::link
+                        # - SL
                         riaktag => url_encode($link->{type})
                     )
                 );
