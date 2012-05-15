@@ -57,7 +57,8 @@ has transport => (
     isa => 'Data::Riak::HTTP',
     required => 1,
     handles => {
-        'ping' => 'ping'
+        'ping' => 'ping',
+        'base_uri' => 'base_uri'
     }
 );
 

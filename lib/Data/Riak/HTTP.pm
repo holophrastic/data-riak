@@ -61,6 +61,17 @@ has timeout => (
     }
 );
 
+=method base_uri
+
+The base URI for the Riak server.
+
+=cut
+
+sub base_uri {
+    my $self = shift;
+    return sprintf('http://%s:%s/', $self->host, $self->port);
+}
+
 =method ping
 
 Tests to see if the specified Riak server is answering. Returns 0 for no, 1 for yes.
