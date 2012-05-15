@@ -3,9 +3,8 @@
 use strict;
 use warnings;
 
-use Data::Dump;
-
 use Test::More;
+use Test::Fatal;
 use Test::Data::Riak;
 
 use Data::Riak;
@@ -26,20 +25,23 @@ my $bucket2 = Data::Riak::Bucket->new({
     riak => $riak
 });
 
-$bucket->add('foo', 'bar');
+is(exception {
+    $bucket->add('foo', 'bar')
+}, undef, '... got no exception adding element to the bucket');
+
 my $obj = $bucket->get('foo');
+isa_ok($obj, 'Data::Riak::Result');
 
 my $value = $obj->value;
-
 is($value, 'bar', 'Original value is bar');
 
 $obj->value('baz');
 $obj->save;
 
 my $obj2 = $bucket2->get('foo');
+isa_ok($obj2, 'Data::Riak::Result');
 
 my $value2 = $obj2->value;
-
 is($value2, 'baz', 'Got updated value');
 
 remove_test_bucket($bucket);

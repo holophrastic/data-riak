@@ -3,9 +3,8 @@
 use strict;
 use warnings;
 
-use Data::Dump;
-
 use Test::More;
+use Test::Fatal;
 use Test::Data::Riak;
 
 use Data::Riak;
@@ -26,15 +25,21 @@ my $bucket2 = Data::Riak::Bucket->new({
     riak => $riak
 });
 
-$bucket->add('foo', 'bar');
+is(exception {
+    $bucket->add('foo', 'bar')
+}, undef, '... got no exception adding element to the bucket');
+
 my $obj = $bucket->get('foo');
+isa_ok($obj, 'Data::Riak::Result');
 
 my $value = $obj->value;
-
 is($value, 'bar', 'Original value is bar');
 
 $bucket->add('foo', 'baz');
-$obj->sync;
+
+is(exception {
+    $obj->sync;
+}, undef, '... got no exception syncing an item');
 
 is($obj->value, 'baz', 'Object was updated and old value cleared');
 

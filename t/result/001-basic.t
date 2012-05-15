@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Fatal;
 use Test::Data::Riak;
 
 use Data::Riak;
@@ -11,24 +12,22 @@ use Data::Riak::Bucket;
 
 skip_unless_riak;
 
-my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
-my $bucket_name = create_test_bucket_name;
-
 my $bucket = Data::Riak::Bucket->new({
-    name => $bucket_name,
-    riak => $riak
+    name => create_test_bucket_name,
+    riak => Data::Riak->new(transport => Data::Riak::HTTP->new)
 });
 
-$bucket->add('foo', 'bar');
+is(exception {
+    $bucket->add('foo', 'bar')
+}, undef, '... got no exception adding element to the bucket');
+
 my $obj = $bucket->get('foo');
+isa_ok($obj, 'Data::Riak::Result');
 
 my $value = $obj->value;
-
 is($value, 'bar', 'Value is bar');
 
-my $derived_riak = $obj->riak;
-is($derived_riak->transport->host, $riak->transport->host, 'Derived host is correct');
-is($derived_riak->transport->port, $riak->transport->port, 'Derived port is correct');
+is($obj->riak, $bucket->riak, 'Derived host is correct');
 
 remove_test_bucket($bucket);
 
