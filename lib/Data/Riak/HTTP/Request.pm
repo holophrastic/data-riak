@@ -19,6 +19,12 @@ has uri => (
     required => 1
 );
 
+has query => (
+    is => 'ro',
+    isa => 'HashRef',
+    predicate => 'has_query'
+);
+
 has data => (
     is => 'ro',
     isa => 'Str',

@@ -91,7 +91,8 @@ sub list_keys {
 
     my $result = $self->riak->send_request({
         method => 'GET',
-        uri => sprintf('buckets/%s/keys?keys=true', $self->name)
+        uri => sprintf('buckets/%s/keys', $self->name),
+        query => { keys => 'true' }
     })->first;
 
     return decode_json( $result->value )->{'keys'};

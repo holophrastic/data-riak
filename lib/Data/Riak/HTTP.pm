@@ -104,7 +104,12 @@ sub send {
 sub _send {
     my ($self, $request) = @_;
 
-    my $uri = sprintf('http://%s:%s/%s', $self->host, $self->port, $request->uri);
+    my $uri = URI->new( sprintf('http://%s:%s/%s', $self->host, $self->port, $request->uri) );
+
+    if ($request->has_query) {
+        $uri->query_form($request->query);
+    }
+
     my $headers = HTTP::Headers->new(
         ($request->method eq 'GET' ? ('Accept' => $request->accept) : ()),
         ($request->method eq 'POST' || $request->method eq 'PUT' ? ('Content-Type' => $request->content_type) : ()),
@@ -115,7 +120,7 @@ sub _send {
     }
 
     my $http_request = HTTP::Request->new(
-        $request->method => $uri,
+        $request->method => $uri->as_string,
         $headers,
         $request->data
     );

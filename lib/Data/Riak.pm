@@ -95,7 +95,9 @@ sub _buckets {
     my $self = shift;
     return decode_json(
         $self->send_request({
-            method => 'GET', uri => '/buckets?buckets=true'
+            method => 'GET',
+            uri => '/buckets',
+            query => { buckets => 'true' }
         })->first->value
     );
 }

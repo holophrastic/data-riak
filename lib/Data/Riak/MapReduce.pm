@@ -39,14 +39,10 @@ has link_phase => (
 
 sub mapreduce {
     my ($self, %options) = @_;
-
-    my $uri = "mapred";
-    $uri .= "?chunked=true" if($options{'chunked'});
-
     return $self->riak->send_request({
         content_type => 'application/json',
         method => 'POST',
-        uri => $uri,
+        uri => 'mapred',
         data => encode_json({
             inputs => $self->inputs,
             query => [
@@ -54,7 +50,10 @@ sub mapreduce {
                 ($self->has_reduce_phase ? { 'reduce' => $self->reduce_phase } : ()),
                 ($self->has_link_phase ? { 'link' => $self->link_phase } : ()),
             ]
-        })
+        }),
+        ($options{'chunked'}
+            ? (query => { chunked => 'true' })
+            : ()),
     });
 }
 
