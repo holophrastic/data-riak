@@ -12,6 +12,19 @@ use HTTP::Headers::ActionPack::LinkList;
 with 'Data::Riak::Role::HasRiak',
      'Data::Riak::Role::HasLocation';
 
+has bucket => (
+    is => 'ro',
+    isa => 'Data::Riak::Bucket',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        return Data::Riak::Bucket->new({
+            name => $self->bucket_name,
+            riak => $self->riak
+        });
+    }
+);
+
 sub build_location {
     my $self = shift;
     return $self->http_message->request->uri if $self->http_message->can('request');
@@ -69,17 +82,13 @@ sub create_link {
 # if it's been changed on the server, discard those changes and update the object
 sub sync {
     my $self = shift;
-    my $bucket = Data::Riak::Bucket->new({
-        name => $self->bucket_name,
-        riak => $self->riak
-    });
 
     # TODO:
     # need to check here for 304 responses
     # http://wiki.basho.com/HTTP-Fetch-Object.html
     # once we add in conditional fetching
     # - SL
-    my $new = $bucket->get($self->key);
+    my $new = $self->bucket->get($self->key);
     $self->http_message($new->http_message);
 
     # and clear any of the attributes that got inflated already
@@ -89,11 +98,7 @@ sub sync {
 # if it's been changed locally, save those changes to the server
 sub save {
     my $self = shift;
-    my $bucket = Data::Riak::Bucket->new({
-        name => $self->bucket_name,
-        riak => $self->riak
-    });
-    return $bucket->add($self->key, $self->value, { links => $self->links->items });
+    return $self->bucket->add($self->key, $self->value, { links => $self->links->items });
 }
 
 sub linkwalk {
