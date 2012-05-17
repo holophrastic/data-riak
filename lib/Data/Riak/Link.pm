@@ -6,7 +6,6 @@ use warnings;
 use Moose;
 
 use URI;
-use HTTP::Headers::ActionPack::LinkHeader;
 
 with 'Data::Riak::Role::HasRiak',
      'Data::Riak::Role::HasBucket',
