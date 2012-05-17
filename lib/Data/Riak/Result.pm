@@ -10,20 +10,8 @@ use URL::Encode qw/url_decode/;
 use HTTP::Headers::ActionPack::LinkList;
 
 with 'Data::Riak::Role::HasRiak',
+     'Data::Riak::Role::HasBucket',
      'Data::Riak::Role::HasLocation';
-
-has bucket => (
-    is => 'ro',
-    isa => 'Data::Riak::Bucket',
-    lazy => 1,
-    default => sub {
-        my $self = shift;
-        return Data::Riak::Bucket->new({
-            name => $self->bucket_name,
-            riak => $self->riak
-        });
-    }
-);
 
 sub build_location {
     my $self = shift;
