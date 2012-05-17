@@ -7,11 +7,7 @@ use Moose;
 
 use JSON::XS qw/encode_json/;
 
-has riak => (
-    is => 'ro',
-    isa => 'Data::Riak',
-    required => 1
-);
+with 'Data::Riak::Role::HasRiak';
 
 has inputs => (
     is => 'ro',

@@ -9,45 +9,14 @@ use URI;
 use URL::Encode qw/url_decode/;
 use HTTP::Headers::ActionPack::LinkList;
 
-has riak => (
-    is => 'ro',
-    isa => 'Data::Riak',
-    required => 1
-);
+with 'Data::Riak::Role::HasRiak',
+     'Data::Riak::Role::HasLocation';
 
-has location => (
-    is => 'ro',
-    isa => 'URI',
-    lazy => 1,
-    default => sub {
-        my $self = shift;
-        return $self->http_message->request->uri if $self->http_message->can('request');
-        return URI->new( $self->http_message->header('location') || die "Cannot determine location from " . $self->http_message );
-    }
-);
-
-has bucket_name => (
-    is => 'ro',
-    isa => 'Str',
-    lazy => 1,
-    default => sub {
-        my $self = shift;
-        my @uri_parts = split /\//, $self->location->path;
-        return $uri_parts[$#uri_parts - 2];
-    }
-);
-
-has key => (
-    is => 'ro',
-    isa => 'Str',
-    lazy => 1,
-    default => sub {
-        my $self = shift;
-        my @uri_parts = split /\//, $self->location->path;
-        return $uri_parts[$#uri_parts];
-    }
-);
-
+sub build_location {
+    my $self = shift;
+    return $self->http_message->request->uri if $self->http_message->can('request');
+    return URI->new( $self->http_message->header('location') || die "Cannot determine location from " . $self->http_message );
+}
 
 has links => (
     is => 'rw',

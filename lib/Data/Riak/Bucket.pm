@@ -12,11 +12,7 @@ use JSON::XS qw/decode_json encode_json/;
 
 use Moose;
 
-has riak => (
-    is => 'ro',
-    isa => 'Data::Riak',
-    required => 1
-);
+with 'Data::Riak::Role::HasRiak';
 
 has name => (
     is => 'ro',
