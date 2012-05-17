@@ -30,7 +30,7 @@ my $bucket = Data::Riak::Bucket->new({
     my $obj = $bucket->get('foo');
     is($obj->value, 'bar', 'Check the value immediately after insertion');
 
-    is($obj->name, 'foo', "Name property is inflated correctly");
+    is($obj->key, 'foo', "Name property is inflated correctly");
     is($obj->bucket_name, $bucket_name, "Bucket name property is inflated correctly");
 }
 
@@ -41,7 +41,7 @@ my $bucket = Data::Riak::Bucket->new({
 
     is($obj->value, 'baz', 'Check the value immediately after insertion');
 
-    is($obj->name, 'bar', "Name property is inflated correctly");
+    is($obj->key, 'bar', "Name property is inflated correctly");
     is($obj->bucket_name, $bucket_name, "Bucket name property is inflated correctly");
 }
 

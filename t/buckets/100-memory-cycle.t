@@ -29,7 +29,7 @@ memory_cycle_ok($riak, '... riak is cycle free');
 $bucket->add('foo', 'bar');
 my $obj = $bucket->get('foo');
 is($obj->value, 'bar', 'Check the value immediately after insertion');
-is($obj->name, 'foo', "Name property is inflated correctly");
+is($obj->key, 'foo', "Name property is inflated correctly");
 
 memory_cycle_ok($obj, '... object is cycle free');
 memory_cycle_ok($bucket, '... bucket is (still) cycle free');

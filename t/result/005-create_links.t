@@ -61,7 +61,7 @@ is(exception {
     my ($buddy1, $buddy2) = $resultset->all;
 
     isa_ok($buddy1, 'Data::Riak::Result');
-    is($buddy1->value, 'value of ' . $buddy1->name, '... go the right value');
+    is($buddy1->value, 'value of ' . $buddy1->key, '... go the right value');
 
     {
         my ($up_link) = $buddy1->links->iterable;
@@ -72,7 +72,7 @@ is(exception {
     }
 
     isa_ok($buddy2, 'Data::Riak::Result');
-    is($buddy2->value, 'value of ' . $buddy2->name, '... go the right value');
+    is($buddy2->value, 'value of ' . $buddy2->key, '... go the right value');
 
     {
         my ($up_link) = $buddy2->links->iterable;

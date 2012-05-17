@@ -31,7 +31,7 @@ $bucket->add('foo', 'bar');
 my $obj = $bucket->get('foo');
 is($obj->value, 'bar', 'Check the value immediately after insertion');
 
-is($obj->name, 'foo', "Name property is inflated correctly");
+is($obj->key, 'foo', "Name property is inflated correctly");
 is($obj->bucket_name, $bucket_name, "Bucket name property is inflated correctly");
 
 try {

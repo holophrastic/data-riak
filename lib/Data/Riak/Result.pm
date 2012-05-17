@@ -37,7 +37,7 @@ has bucket_name => (
     }
 );
 
-has name => (
+has key => (
     is => 'ro',
     isa => 'Str',
     lazy => 1,
@@ -94,7 +94,7 @@ sub BUILD {
 
 sub create_link {
     my ($self, %opts) = @_;
-    return { bucket => $self->bucket_name, key => $self->name, %opts };
+    return { bucket => $self->bucket_name, key => $self->key, %opts };
 }
 
 # if it's been changed on the server, discard those changes and update the object
@@ -110,7 +110,7 @@ sub sync {
     # http://wiki.basho.com/HTTP-Fetch-Object.html
     # once we add in conditional fetching
     # - SL
-    my $new = $bucket->get($self->name);
+    my $new = $bucket->get($self->key);
     $self->http_message($new->http_message);
 
     # and clear any of the attributes that got inflated already
@@ -124,7 +124,7 @@ sub save {
         name => $self->bucket_name,
         riak => $self->riak
     });
-    return $bucket->add($self->name, $self->value, { links => $self->links->items });
+    return $bucket->add($self->key, $self->value, { links => $self->links->items });
 }
 
 sub linkwalk {
@@ -132,7 +132,7 @@ sub linkwalk {
     return undef unless $params;
     return $self->riak->linkwalk({
         bucket => $self->bucket_name,
-        object => $self->name,
+        object => $self->key,
         params => $params
     });
 }

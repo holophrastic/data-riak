@@ -29,7 +29,7 @@ $bucket->add('foo', '{"bar":1}', { content_type => 'application/json' });
     my $obj = $bucket->get('foo');
     is($obj->value, '{"bar":1}', 'Check the value immediately after insertion');
 
-    is($obj->name, 'foo', "Name property is inflated correctly");
+    is($obj->key, 'foo', "Name property is inflated correctly");
     is($obj->bucket_name, $bucket_name, "Bucket name property is inflated correctly");
 
     is($obj->content_type->type, 'application/json', '... got the right type');

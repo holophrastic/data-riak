@@ -53,7 +53,7 @@ is(scalar @{$resultset->results}, 2, 'Got two Riak::Results back from linkwalkin
 my ($buddy1, $buddy2) = $resultset->all;
 
 isa_ok($buddy1, 'Data::Riak::Result');
-is($buddy1->value, 'value of ' . $buddy1->name, '... go the right value');
+is($buddy1->value, 'value of ' . $buddy1->key, '... go the right value');
 
 {
     my ($foo_link, $up_link) = $buddy1->links->iterable;
@@ -68,7 +68,7 @@ is($buddy1->value, 'value of ' . $buddy1->name, '... go the right value');
 }
 
 isa_ok($buddy2, 'Data::Riak::Result');
-is($buddy2->value, 'value of ' . $buddy2->name, '... go the right value');
+is($buddy2->value, 'value of ' . $buddy2->key, '... go the right value');
 
 {
     my ($foo_link, $up_link) = $buddy2->links->iterable;
