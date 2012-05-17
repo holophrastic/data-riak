@@ -94,7 +94,7 @@ sub BUILD {
 
 sub create_link {
     my ($self, %opts) = @_;
-    return { bucket => $self->bucket_name, target => $self->name, %opts };
+    return { bucket => $self->bucket_name, key => $self->name, %opts };
 }
 
 # if it's been changed on the server, discard those changes and update the object

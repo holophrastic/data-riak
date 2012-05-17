@@ -54,9 +54,9 @@ try {
     is($_->code, "404", "Calling for a value that doesn't exist returns 404");
 };
 
-$bucket->add('bar', 'value of bar', { links => [{ bucket => $bucket_name, type => 'buddy', target =>'foo' }] });
-$bucket->add('baz', 'value of baz', { links => [{ type => 'buddy', target =>'foo' }] });
-$bucket->add('foo', 'value of foo', { links => [{ type => 'not a buddy', target =>'bar' }, { type => 'not a buddy', target =>'baz' }] });
+$bucket->add('bar', 'value of bar', { links => [{ bucket => $bucket_name, riaktag => 'buddy', key =>'foo' }] });
+$bucket->add('baz', 'value of baz', { links => [{ riaktag => 'buddy', key =>'foo' }] });
+$bucket->add('foo', 'value of foo', { links => [{ riaktag => 'not a buddy', key =>'bar' }, { riaktag => 'not a buddy', key =>'baz' }] });
 
 is_deeply(
     [ sort @{ $bucket->list_keys } ],

@@ -148,13 +148,13 @@ of this is "Show me all of the friends of people Bob is friends with", but it ha
 great potential, and it's the one thing we tried to make really simple with Data::Riak.
 
     # Add bar to the bucket, and list foo as a buddy.
-    $bucket->add('bar', 'value of bar', [{ bucket => $bucket_name, type => 'buddy', target =>'foo' }]);
+    $bucket->add('bar', 'value of bar', [{ bucket => $bucket_name, riaktag => 'buddy', key =>'foo' }]);
 
     # Add baz to the bucket, and list foo as a buddy. It will default to the current bucket if not passed in.
-    $bucket->add('baz', 'value of baz', [{ type => 'buddy', target =>'foo' }]);
+    $bucket->add('baz', 'value of baz', [{ riaktag => 'buddy', key =>'foo' }]);
 
     # Add foo to the bucket, and list both bar and baz as "not a buddy"
-    $bucket->add('foo', 'value of foo', [{ type => 'not a buddy', target =>'bar' }, { type => 'not a buddy', target =>'baz' }]);
+    $bucket->add('foo', 'value of foo', [{ riaktag => 'not a buddy', key =>'bar' }, { riaktag => 'not a buddy', key =>'baz' }]);
 
     # Get everyone in my_bucket who foo thinks is not a buddy.
     $walk_results = $bucket->linkwalk('foo', [ [ 'not a buddy', 1 ] ]);

@@ -26,8 +26,8 @@ is(exception {
     $baz = $bucket->add('baz', 'value of baz', { query => { returnbody => 'true' } });
 }, undef, '... no exception while items');
 
-my $bar_link = $bar->create_link(type => 'not a buddy');
-my $baz_link = $baz->create_link(type => 'not a buddy');
+my $bar_link = $bar->create_link(riaktag => 'not a buddy');
+my $baz_link = $baz->create_link(riaktag => 'not a buddy');
 
 is(exception {
     $bucket->add('foo', 'value of foo', { links => [ $bar_link, $baz_link ] });
