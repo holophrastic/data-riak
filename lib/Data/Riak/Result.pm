@@ -9,15 +9,53 @@ use URI;
 use URL::Encode qw/url_decode/;
 use HTTP::Headers::ActionPack::LinkList;
 
-with 'Data::Riak::Role::HasRiak',
-     'Data::Riak::Role::HasBucket',
-     'Data::Riak::Role::HasLocation';
+with 'Data::Riak::Role::HasRiak';
 
-sub build_location {
-    my $self = shift;
-    return $self->http_message->request->uri if $self->http_message->can('request');
-    return URI->new( $self->http_message->header('location') || die "Cannot determine location from " . $self->http_message );
-}
+has bucket => (
+    is => 'ro',
+    isa => 'Data::Riak::Bucket',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        return Data::Riak::Bucket->new({
+            name => $self->bucket_name,
+            riak => $self->riak
+        });
+    }
+);
+
+has location => (
+    is => 'ro',
+    isa => 'URI',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        return $self->http_message->request->uri if $self->http_message->can('request');
+        return URI->new( $self->http_message->header('location') || die "Cannot determine location from " . $self->http_message );
+    }
+);
+
+has bucket_name => (
+    is => 'ro',
+    isa => 'Str',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        my @uri_parts = split /\//, $self->location->path;
+        return $uri_parts[$#uri_parts - 2];
+    }
+);
+
+has key => (
+    is => 'ro',
+    isa => 'Str',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        my @uri_parts = split /\//, $self->location->path;
+        return $uri_parts[$#uri_parts];
+    }
+);
 
 has links => (
     is => 'rw',
