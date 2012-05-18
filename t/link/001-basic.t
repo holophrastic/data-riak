@@ -1,0 +1,49 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Try::Tiny;
+
+use Test::More;
+use Test::Fatal;
+use Test::Data::Riak;
+
+BEGIN {
+    use_ok('Data::Riak::Link');
+}
+
+use Data::Riak;
+
+skip_unless_riak;
+
+my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
+my $bucket_name = create_test_bucket_name;
+my $bucket = $riak->bucket( $bucket_name );
+
+my $link = Data::Riak::Link->new(
+    bucket => $bucket_name,
+    key => 'foo',
+    riaktag => 'buddy'
+);
+isa_ok($link, 'Data::Riak::Link');
+
+try {
+    $link->resolve( $riak )
+} catch {
+    is($_->value, "not found\n", "Calling for a value that doesn't exist returns not found");
+    is($_->code, "404", "Calling for a value that doesn't exist returns 404");
+};
+
+$bucket->add('foo', 'bar');
+
+my $result = $link->resolve( $riak );
+isa_ok($result, 'Data::Riak::Result');
+
+is($result->key, 'foo', '... got the result we expected');
+
+remove_test_bucket($bucket);
+
+done_testing;
+
+
