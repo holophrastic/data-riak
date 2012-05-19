@@ -32,11 +32,6 @@ has params => (
     default => sub { +{} }
 );
 
-sub resolve {
-    my ($self, $riak) = @_;
-    $riak->bucket( $self->bucket )->get( $self->key );
-}
-
 # FIXME:
 # Result::links needs to use this
 # - SL

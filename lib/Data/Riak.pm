@@ -116,6 +116,11 @@ sub bucket {
     })
 }
 
+sub resolve_link {
+    my ($self, $link) = @_;
+    $self->bucket( $link->bucket )->get( $link->key );
+}
+
 sub linkwalk {
     my ($self, $args) = @_;
     my $object = $args->{object} || die 'You must have an object to linkwalk';
