@@ -107,18 +107,7 @@ sub create_link {
 
 # if it's been changed on the server, discard those changes and update the object
 sub sync {
-    my $self = shift;
-
-    # TODO:
-    # need to check here for 304 responses
-    # http://wiki.basho.com/HTTP-Fetch-Object.html
-    # once we add in conditional fetching
-    # - SL
-    my $new = $self->bucket->get($self->key);
-    $self->http_message($new->http_message);
-
-    # and clear any of the attributes that got inflated already
-    $self->_clear_links;
+    $_[0] = $_[0]->bucket->get($_[0]->key)
 }
 
 # if it's been changed locally, save those changes to the server
