@@ -21,29 +21,46 @@ my $bucket = Data::Riak::Bucket->new({
 });
 
 is(exception {
-    $bucket->add('bar', 'value of bar', { links => [{ bucket => $bucket_name, riaktag => 'buddy', key =>'foo' }] });
-    $bucket->add('baz', 'value of baz', { links => [{ riaktag => 'buddy', key =>'foo' }] });
-    $bucket->add('foo', 'value of foo', { links => [{ riaktag => 'not a buddy', key =>'bar' }, { riaktag => 'not a buddy', key =>'baz' }] });
+    $bucket->add('bar', 'value of bar', { links => [Data::Riak::Link->new( bucket => $bucket_name, riaktag => 'buddy', key =>'foo' )] });
+    $bucket->add('baz', 'value of baz', { links => [$bucket->create_link( riaktag => 'buddy', key =>'foo' )] });
+    $bucket->add('foo', 'value of foo', { links => [$bucket->create_link({ riaktag => 'not a buddy', key =>'bar' }), $bucket->create_link({ riaktag => 'not a buddy', key =>'baz' })] });
 }, undef, '... no exception while adding links');
 
 my $foo = $bucket->get('foo');
 isa_ok($foo, 'Data::Riak::Result');
 
-isa_ok($foo->links, 'HTTP::Headers::ActionPack::LinkList');
+is(ref $foo->links, 'ARRAY', '... got an array ref');
 
-my ($bar_link, $baz_link, $up_link) = $foo->links->iterable;
+my ($bar_link, $baz_link, $up_link) = @{ $foo->links };
 
-isa_ok($bar_link, 'HTTP::Headers::ActionPack::LinkHeader');
-is($bar_link->href, ('/buckets/' . $bucket_name . '/keys/bar'), '... got the right href');
-is($bar_link->params->{'riaktag'}, 'not a buddy', '... got the right riak tag');
+my ($bar_link_header, $baz_link_header, $up_link_header) = map { $_->as_link_header } ($bar_link, $baz_link, $up_link);
 
-isa_ok($baz_link, 'HTTP::Headers::ActionPack::LinkHeader');
-is($baz_link->href, ('/buckets/' . $bucket_name . '/keys/baz'), '... got the right href');
-is($baz_link->params->{'riaktag'}, 'not a buddy', '... got the right riak tag');
+isa_ok($bar_link, 'Data::Riak::Link');
+is($bar_link->bucket, $bucket_name, '... got the right bucket');
+is($bar_link->key, 'bar', '... got the right key');
+is($bar_link->riaktag, 'not a buddy', '... got the right riaktag');
 
-isa_ok($up_link, 'HTTP::Headers::ActionPack::LinkHeader');
-is($up_link->href, ('/buckets/' . $bucket_name), '... got the right href');
-is($up_link->rel, 'up', '... got the right rel');
+isa_ok($bar_link_header, 'HTTP::Headers::ActionPack::LinkHeader');
+is($bar_link_header->href, ('/buckets/' . $bucket_name . '/keys/bar'), '... got the right href');
+is($bar_link_header->params->{'riaktag'}, 'not+a+buddy', '... got the right riak tag (and it is url-encoded)');
+
+isa_ok($baz_link, 'Data::Riak::Link');
+is($baz_link->bucket, $bucket_name, '... got the right bucket');
+is($baz_link->key, 'baz', '... got the right key');
+is($baz_link->riaktag, 'not a buddy', '... got the right riaktag');
+
+isa_ok($baz_link_header, 'HTTP::Headers::ActionPack::LinkHeader');
+is($baz_link_header->href, ('/buckets/' . $bucket_name . '/keys/baz'), '... got the right href');
+is($baz_link_header->params->{'riaktag'}, 'not+a+buddy', '... got the right riak tag (and it is url-encoded)');
+
+isa_ok($up_link, 'Data::Riak::Link');
+is($up_link->bucket, $bucket_name, '... got the right bucket');
+ok(!$up_link->has_key, '... no key');
+ok(!$up_link->has_riaktag, '... no riaktag');
+
+isa_ok($up_link_header, 'HTTP::Headers::ActionPack::LinkHeader');
+is($up_link_header->href, ('/buckets/' . $bucket_name), '... got the right href');
+is($up_link_header->rel, 'up', '... got the right rel');
 
 my $resultset = $foo->linkwalk([[ 'not a buddy', 1 ]]);
 isa_ok($resultset, 'Data::Riak::ResultSet');
@@ -56,30 +73,54 @@ isa_ok($buddy1, 'Data::Riak::Result');
 is($buddy1->value, 'value of ' . $buddy1->key, '... go the right value');
 
 {
-    my ($foo_link, $up_link) = $buddy1->links->iterable;
+    my ($foo_link, $up_link) = @{$buddy1->links};
 
-    isa_ok($foo_link, 'HTTP::Headers::ActionPack::LinkHeader');
-    is($foo_link->href, ('/buckets/' . $bucket_name . '/keys/foo'), '... got the right href');
-    is($foo_link->params->{'riaktag'}, 'buddy', '... got the right riak tag');
+    my ($foo_link_header, $up_link_header) = map { $_->as_link_header } ($foo_link, $up_link);
 
-    isa_ok($up_link, 'HTTP::Headers::ActionPack::LinkHeader');
-    is($up_link->href, ('/buckets/' . $bucket_name), '... got the right href');
-    is($up_link->rel, 'up', '... got the right rel');
+    isa_ok($foo_link, 'Data::Riak::Link');
+    is($foo_link->bucket, $bucket_name, '... got the right bucket');
+    is($foo_link->key, 'foo', '... got the right key');
+    is($foo_link->riaktag, 'buddy', '... got the right riaktag');
+
+    isa_ok($foo_link_header, 'HTTP::Headers::ActionPack::LinkHeader');
+    is($foo_link_header->href, ('/buckets/' . $bucket_name . '/keys/foo'), '... got the right href');
+    is($foo_link_header->params->{'riaktag'}, 'buddy', '... got the right riak tag');
+
+    isa_ok($up_link, 'Data::Riak::Link');
+    is($up_link->bucket, $bucket_name, '... got the right bucket');
+    ok(!$up_link->has_key, '... no key');
+    ok(!$up_link->has_riaktag, '... no riaktag');
+
+    isa_ok($up_link_header, 'HTTP::Headers::ActionPack::LinkHeader');
+    is($up_link_header->href, ('/buckets/' . $bucket_name), '... got the right href');
+    is($up_link_header->rel, 'up', '... got the right rel');
 }
 
 isa_ok($buddy2, 'Data::Riak::Result');
 is($buddy2->value, 'value of ' . $buddy2->key, '... go the right value');
 
 {
-    my ($foo_link, $up_link) = $buddy2->links->iterable;
+    my ($foo_link, $up_link) = @{$buddy2->links};
 
-    isa_ok($foo_link, 'HTTP::Headers::ActionPack::LinkHeader');
-    is($foo_link->href, ('/buckets/' . $bucket_name . '/keys/foo'), '... got the right href');
-    is($foo_link->params->{'riaktag'}, 'buddy', '... got the right riak tag');
+    my ($foo_link_header, $up_link_header) = map { $_->as_link_header } ($foo_link, $up_link);
 
-    isa_ok($up_link, 'HTTP::Headers::ActionPack::LinkHeader');
-    is($up_link->href, ('/buckets/' . $bucket_name), '... got the right href');
-    is($up_link->rel, 'up', '... got the right rel');
+    isa_ok($foo_link, 'Data::Riak::Link');
+    is($foo_link->bucket, $bucket_name, '... got the right bucket');
+    is($foo_link->key, 'foo', '... got the right key');
+    is($foo_link->riaktag, 'buddy', '... got the right riaktag');
+
+    isa_ok($foo_link_header, 'HTTP::Headers::ActionPack::LinkHeader');
+    is($foo_link_header->href, ('/buckets/' . $bucket_name . '/keys/foo'), '... got the right href');
+    is($foo_link_header->params->{'riaktag'}, 'buddy', '... got the right riak tag');
+
+    isa_ok($up_link, 'Data::Riak::Link');
+    is($up_link->bucket, $bucket_name, '... got the right bucket');
+    ok(!$up_link->has_key, '... no key');
+    ok(!$up_link->has_riaktag, '... no riaktag');
+
+    isa_ok($up_link_header, 'HTTP::Headers::ActionPack::LinkHeader');
+    is($up_link_header->href, ('/buckets/' . $bucket_name), '... got the right href');
+    is($up_link_header->rel, 'up', '... got the right rel');
 }
 
 remove_test_bucket($bucket);

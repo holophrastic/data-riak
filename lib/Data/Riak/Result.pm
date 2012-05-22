@@ -5,9 +5,10 @@ use warnings;
 
 use Moose;
 
+use Data::Riak::Link;
+
 use URI;
-use URL::Encode qw/url_decode/;
-use HTTP::Headers::ActionPack::LinkList;
+use HTTP::Headers::ActionPack;
 
 with 'Data::Riak::Role::HasRiak';
 
@@ -28,6 +29,7 @@ has location => (
     is => 'ro',
     isa => 'URI',
     lazy => 1,
+    clearer => '_clear_location',
     default => sub {
         my $self = shift;
         return $self->http_message->request->uri if $self->http_message->can('request');
@@ -59,22 +61,16 @@ has key => (
 
 has links => (
     is => 'rw',
-    isa => 'HTTP::Headers::ActionPack::LinkList',
+    isa => 'ArrayRef[Data::Riak::Link]',
     lazy => 1,
     clearer => '_clear_links',
     default => sub {
         my $self = shift;
         my $links = $self->http_message->header('link');
-        return HTTP::Headers::ActionPack::LinkList->new unless $links;
-        # NOTE:
-        # we do the inverse of this in
-        # &Data::Riak::Bucket::add
-        # - SL
-        foreach my $link ( $links->iterable ) {
-            $link->params->{'riaktag'} = url_decode( $link->params->{'riaktag'} )
-                if exists $link->params->{'riaktag'};
-        }
-        return $links;
+        return [] unless $links;
+        return [ map {
+            Data::Riak::Link->from_link_header( $_ )
+        } $links->iterable ];
     }
 );
 
@@ -88,9 +84,9 @@ has http_message => (
         'header' => 'header',
         'headers' => 'headers',
         # curried delegation
+        'etag' => [ 'header' => 'etag' ],
         'content_type' => [ 'header' => 'content-type' ],
         'vector_clock' => [ 'header' => 'x-riak-vclock' ],
-        'etag' => [ 'header' => 'etag' ],
         'last_modified' => [ 'header' => 'last_modified' ]
     }
 );
@@ -102,7 +98,12 @@ sub BUILD {
 
 sub create_link {
     my ($self, %opts) = @_;
-    return { bucket => $self->bucket_name, key => $self->key, %opts };
+    return Data::Riak::Link->new({
+        bucket => $self->bucket_name,
+        key => $self->key,
+        riaktag => $opts{riaktag},
+        (exists $opts{params} ? (params => $opts{params}) : ())
+    });
 }
 
 # if it's been changed on the server, discard those changes and update the object
@@ -113,7 +114,7 @@ sub sync {
 # if it's been changed locally, save those changes to the server
 sub save {
     my $self = shift;
-    return $self->bucket->add($self->key, $self->value, { links => $self->links->items });
+    return $self->bucket->add($self->key, $self->value, { links => $self->links });
 }
 
 sub linkwalk {

@@ -3,14 +3,12 @@ package Data::Riak::Bucket;
 use strict;
 use warnings;
 
-use HTTP::Headers::ActionPack;
-use HTTP::Headers::ActionPack::LinkHeader;
+use Moose;
+
+use Data::Riak::Link;
 use HTTP::Headers::ActionPack::LinkList;
 
-use URL::Encode qw/url_encode/;
 use JSON::XS qw/decode_json encode_json/;
-
-use Moose;
 
 with 'Data::Riak::Role::HasRiak';
 
@@ -28,20 +26,11 @@ sub add {
     my $pack = HTTP::Headers::ActionPack::LinkList->new;
     if($opts->{'links'}) {
         foreach my $link (@{$opts->{'links'}}) {
-            if(blessed $link && $link->isa('HTTP::Headers::ActionPack::LinkHeader')) {
-                $pack->add($link);
-            } else {
-                my $link_url = $link->{url} || sprintf('/buckets/%s/keys/%s', $link->{bucket} || $self->name, $link->{key});
-                my $created_link = HTTP::Headers::ActionPack::LinkHeader->new(
-                    $link_url => (
-                        # NOTE:
-                        # we do the inverse of this in
-                        # &Data::Riak::Result::link
-                        # - SL
-                        riaktag => url_encode($link->{riaktag})
-                    )
-                );
-                $pack->add($created_link);
+            if(blessed $link && $link->isa('Data::Riak::Link')) {
+                $pack->add($link->as_link_header);
+            }
+            else {
+                confess "Bad link type ($link)";
             }
         }
     }
@@ -124,6 +113,19 @@ sub remove_all {
     foreach my $key ( @$keys ) {
         $self->remove( $key );
     }
+}
+
+sub create_link {
+    my $self = shift;
+    my %opts = ref $_[0] eq 'HASH' ? %{$_[0]} : @_;
+    confess "You must provide a key for a link" unless exists $opts{key};
+    confess "You must provide a riaktag for a link" unless exists $opts{riaktag};
+    return Data::Riak::Link->new({
+        bucket => $self->name,
+        key => $opts{key},
+        riaktag => $opts{riaktag},
+        (exists $opts{params} ? (params => $opts{params}) : ())
+    });
 }
 
 sub linkwalk {

@@ -5,7 +5,7 @@ use warnings;
 
 use Moose;
 
-use URL::Encode qw/url_encode/;
+use URL::Encode qw/url_encode url_decode/;
 use HTTP::Headers::ActionPack::LinkHeader;
 
 has bucket => (
@@ -17,13 +17,13 @@ has bucket => (
 has key => (
     is => 'ro',
     isa => 'Str',
-    required => 1
+    predicate => 'has_key'
 );
 
 has riaktag => (
     is => 'ro',
     isa => 'Str',
-    required => 1
+    predicate => 'has_riaktag'
 );
 
 has params => (
@@ -32,35 +32,52 @@ has params => (
     default => sub { +{} }
 );
 
-# FIXME:
-# Result::links needs to use this
-# - SL
 sub from_link_header {
     my ($class, $link_header) = @_;
-    my ($bucket, $key) = ($link_header->href =~ /^buckets\/(.*)\/keys\/(.*)/);
+
+    my ($bucket, $key, $riaktag);
+
+    # link to another key in riak
+    if ($link_header->href =~ /^\/buckets\/(.*)\/keys\/(.*)/) {
+        ($bucket, $key) = ($1, $2);
+    }
+    # link to a bucket
+    elsif ($link_header->href =~ /^\/buckets\/(.*)/) {
+        $bucket = $1;
+    }
+    else {
+        confess "Incompatible link header URL (" .  $link_header->href . ")";
+    }
+
     my %params = %{ $link_header->params };
 
-    my $riaktag = url_decode( delete $params{'riaktag'} ) if exists $params{'riaktag'};
+    $riaktag = url_decode( delete $params{'riaktag'} )
+        if exists $params{'riaktag'};
 
     $class->new(
         bucket => $bucket,
-        key => $key,
-        riaktag => $riaktag,
+        ($key ? (key => $key) : ()),
+        ($riaktag ? (riaktag => $riaktag) : ()),
         params => \%params
     );
 }
 
-
-# FIXME:
-# Bucket::add needs to use this
-# - SL
 sub as_link_header {
     my $self = shift;
-    HTTP::Headers::ActionPack::LinkHeader->new(
-        sprintf('/buckets/%s/keys/%s', $self->bucket, $self->key),
-        riaktag => url_encode($self->riaktag),
-        %{ $self->params }
-    );
+    if ($self->has_key) {
+        return HTTP::Headers::ActionPack::LinkHeader->new(
+            sprintf('/buckets/%s/keys/%s', $self->bucket, $self->key),
+            ($self->has_riaktag ? (riaktag => url_encode($self->riaktag)) : ()),
+            %{ $self->params }
+        );
+    }
+    else {
+        return HTTP::Headers::ActionPack::LinkHeader->new(
+            sprintf('/buckets/%s', $self->bucket),
+            ($self->has_riaktag ? (riaktag => url_encode($self->riaktag)) : ()),
+            %{ $self->params }
+        );
+    }
 }
 
 
