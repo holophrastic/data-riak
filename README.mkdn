@@ -6,10 +6,12 @@ while still allowing you to do complicated tasks.
 
 # SYNOPSIS
 
-    my $riak = Data::Riak::HTTP->new({
-        host => 'riak.example.com',
-        port => '8098',
-        timeout => 5
+    my $riak = Data::Riak->new({
+        transport => Data::Riak::HTTP->new({
+            host => 'riak.example.com',
+            port => '8098',
+            timeout => 5
+        })
     });
 
     my $bucket = Data::Riak::Bucket->new({
@@ -29,6 +31,12 @@ while still allowing you to do complicated tasks.
     # The HTTP status code, 200 on a successful GET.
     my $code = $foo->code;
 
+Get the list of buckets. This is NOT RECOMMENDED for production systems, as Riak
+has to essentially walk the entire database. Here purely as a tool for debugging
+and convenience.
+
+Given a `$name`, this will return a [Data::Riak::Bucket](http://search.cpan.org/perldoc?Data::Riak::Bucket) object for it.
+
 # LINKWALKING
 
 One of Riak's notable features is the ability to easily "linkwalk", or traverse
@@ -37,13 +45,26 @@ of this is "Show me all of the friends of people Bob is friends with", but it ha
 great potential, and it's the one thing we tried to make really simple with Data::Riak.
 
     # Add bar to the bucket, and list foo as a buddy.
-    $bucket->add('bar', 'value of bar', [{ bucket => $bucket_name, riaktag => 'buddy', key =>'foo' }]);
+    $bucket->add('bar', 'value of bar', {
+      links => [ Data::Riak::Link->new(
+        bucket => $bucket_name, riaktag => 'buddy', key =>'foo'
+      ) ]
+    });
 
     # Add baz to the bucket, and list foo as a buddy. It will default to the current bucket if not passed in.
-    $bucket->add('baz', 'value of baz', [{ riaktag => 'buddy', key =>'foo' }]);
+    $bucket->add('baz', 'value of baz', {
+      links => [ Data::Riak::Link->new(
+        riaktag => 'buddy', key =>'foo'
+      )]
+    });
 
     # Add foo to the bucket, and list both bar and baz as "not a buddy"
-    $bucket->add('foo', 'value of foo', [{ riaktag => 'not a buddy', key =>'bar' }, { riaktag => 'not a buddy', key =>'baz' }]);
+    $bucket->add('foo', 'value of foo', {
+      links => [
+        Data::Riak::Link->new(riaktag => 'not a buddy', key =>'bar'),
+        Data::Riak::Link->new(riaktag => 'not a buddy', key =>'baz')
+      ]
+    });
 
     # Get everyone in my_bucket who foo thinks is not a buddy.
     $walk_results = $bucket->linkwalk('foo', [ [ 'not a buddy', 1 ] ]);
@@ -59,3 +80,6 @@ great potential, and it's the one thing we tried to make really simple with Data
     });
 
 The bucket passed in on the riak object's linkwalk is the bucket the original target is in, and is used as a default if you only pass two options in the params lists.
+
+# ACKNOWLEDGEMENTS
+
