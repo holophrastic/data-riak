@@ -159,18 +159,13 @@ great potential, and it's the one thing we tried to make really simple with Data
       ) ]
     });
 
-    # Add baz to the bucket, and list foo as a buddy. It will default to the current bucket if not passed in.
-    $bucket->add('baz', 'value of baz', {
-      links => [ Data::Riak::Link->new(
-        riaktag => 'buddy', key =>'foo'
-      )]
-    });
-
     # Add foo to the bucket, and list both bar and baz as "not a buddy"
+    # create the links via the $bucket object and the bucket will be
+    # inferred from the context
     $bucket->add('foo', 'value of foo', {
       links => [
-        Data::Riak::Link->new(riaktag => 'not a buddy', key =>'bar'),
-        Data::Riak::Link->new(riaktag => 'not a buddy', key =>'baz')
+        $bucket->create_link(riaktag => 'not a buddy', key =>'bar'),
+        $bucket->create_link(riaktag => 'not a buddy', key =>'baz')
       ]
     });
 
