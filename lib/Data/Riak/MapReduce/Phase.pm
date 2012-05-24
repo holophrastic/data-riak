@@ -1,6 +1,5 @@
 package Data::Riak::MapReduce::Phase;
 
-use JSON::XS qw(encode_json);
 use Moose::Role;
 
 =head1 DESCRIPTION
