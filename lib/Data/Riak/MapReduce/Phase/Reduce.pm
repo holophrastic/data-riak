@@ -21,7 +21,7 @@ for attribute information.
   my $mp = Data::Riak::MapReduce::Phase::Map->new(
     language => "javascript", # The default
     source => "function(v) { return [ v ] }",
-    keep => $JSON::XS::true # The default
+    keep => 1 # The default
   );
 
 =cut

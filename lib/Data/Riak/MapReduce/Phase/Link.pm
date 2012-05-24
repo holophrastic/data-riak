@@ -1,6 +1,8 @@
 package Data::Riak::MapReduce::Phase::Link;
 use Moose;
 
+use JSON::XS ();
+
 # ABSTRACT: Link phase of a MapReduce
 
 with ('Data::Riak::MapReduce::Phase');
@@ -14,7 +16,7 @@ A map/reduce link phase for Data::Riak
   my $lp = Data::Riak::MapReduce::Phase::Link->new(
     bucket=> "foo",
     tag   => "friend",
-    keep  => $JSON::XS::false
+    keep  => 0
   );
 
 =attr bucket
@@ -55,10 +57,10 @@ Serialize this link phase.
 
 sub pack {
     my $self = shift;
-  
+
     my $href = {};
 
-    $href->{keep} = $self->keep if $self->has_keep;
+    $href->{keep} = $self->keep ? JSON::XS::true() : JSON::XS::false() if $self->has_keep;
     $href->{bucket} = $self->bucket if $self->has_bucket;
     $href->{tag} = $self->tag if $self->has_tag;
 

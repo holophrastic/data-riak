@@ -2,11 +2,11 @@ package Data::Riak::MapReduce::Phase::Map;
 use Moose;
 use Moose::Util::TypeConstraints;
 
+use JSON::XS ();
+
 # ABSTRACT: Map phase of a MapReduce
 
 with ('Data::Riak::MapReduce::Phase');
-
-enum 'RiakLanguages', [qw(javascript erlang)];
 
 =head1 DESCRIPTION
 
@@ -17,7 +17,7 @@ A map/reduce map phase for Data::Riak
   my $mp = Data::Riak::MapReduce::Phase::Map->new(
     language => "javascript", # The default
     source => "function(v) { return [ v ] }",
-    keep => $JSON::XS::true # The default
+    keep => 1 # The default
   );
 
 =attr keep
@@ -34,7 +34,7 @@ attribute is required.
 
 has language => (
   is => 'ro',
-  isa => 'RiakLanguages',
+  isa => enum([qw(javascript erlang)]),
   required => 1
 );
 
@@ -77,10 +77,10 @@ Serialize this map phase.
 
 sub pack {
   my $self = shift;
-  
+
   my $href = {};
-  
-  $href->{keep} = $self->keep if $self->has_keep;
+
+  $href->{keep} = $self->keep ? JSON::XS::true() : JSON::XS::false() if $self->has_keep;
   $href->{language} = $self->language;
   $href->{name} = $self->name if $self->has_name;
   $href->{source} = $self->source if $self->has_source;

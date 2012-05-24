@@ -10,14 +10,20 @@ phase classes.
 =attr keep
 
 Flag controlling whether the results of this phase are included in the final
-result of the map/reduce. Defaults to true.
+result of the map/reduce.
+
+=method pack
+
+The C<pack> method is required to be implemented by consumers of this role.
 
 =cut
 
 has keep => (
     is => 'rw',
-    isa => 'JSON::XS::Boolean',
-    predicate => 'has_keep'
+    isa => 'Bool',
+    predicate => 'has_keep',
 );
 
-1;
+requires 'pack';
+
+no Moose::Role; 1;
