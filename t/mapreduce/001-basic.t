@@ -126,14 +126,16 @@ test_map_reduce(
     Data::Riak::MapReduce->new({
         riak => $riak,
         inputs => [ [ $bucket_name, "p1" ], [ $bucket_name, "p2" ], [ $bucket_name, "p5" ] ],
-        map_phase => {
-            language => 'javascript',
-            source => $MAP_SOURCE
-        },
-        reduce_phase => {
-            language => 'javascript',
-            source => $REDUCE_SOURCE
-        }
+        phases => [
+          Data::Riak::MapReduce::Phase::Map->new(
+              language => 'javascript',
+              source => $MAP_SOURCE
+          ),
+          Data::Riak::MapReduce::Phase::Reduce->new(
+              language => 'javascript',
+              source => $REDUCE_SOURCE
+          )
+        ]
     })
 );
 
@@ -142,14 +144,16 @@ test_map_reduce(
     Data::Riak::MapReduce->new({
         riak => $riak,
         inputs => $bucket_name,
-        map_phase => {
-            language => 'javascript',
-            source => $MAP_SOURCE
-        },
-        reduce_phase => {
-            language => 'javascript',
-            source => $REDUCE_SOURCE
-        }
+        phases => [
+            Data::Riak::MapReduce::Phase::Map->new(
+                language => 'javascript',
+                source => $MAP_SOURCE
+            ),
+            Data::Riak::MapReduce::Phase::Reduce->new(
+                language => 'javascript',
+                source => $REDUCE_SOURCE
+            )
+        ]
     })
 );
 
@@ -157,14 +161,16 @@ test_map_reduce(
     my $mr = Data::Riak::MapReduce->new({
         riak => $riak,
         inputs => $bucket_name,
-        map_phase => {
-            language => 'javascript',
-            source => $MAP_SOURCE
-        },
-        reduce_phase => {
-            language => 'javascript',
-            source => $REDUCE_SOURCE
-        }
+        phases => [
+            Data::Riak::MapReduce::Phase::Map->new(
+                language => 'javascript',
+                source => $MAP_SOURCE
+            ),
+            Data::Riak::MapReduce::Phase::Reduce->new(
+                language => 'javascript',
+                source => $REDUCE_SOURCE
+            )
+        ]
     });
 
     my $results = $mr->mapreduce( chunked => 1 );
