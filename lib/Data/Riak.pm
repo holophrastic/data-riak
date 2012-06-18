@@ -188,7 +188,25 @@ The bucket passed in on the riak object's linkwalk is the bucket the original ta
 
 =begin :postlude
 
+=head1 AUTHOR
+
+Andrew Nelson, C<< <anelson at cpan.org> >>
+
 =head1 ACKNOWLEDGEMENTS
+
+Influenced heavily by L<Net::Riak>.
+
+I wrote the first pass of Data::Riak, but large sections were added/fixed/rewritten to not suck by Stevan Little C<< <stevan at cpan.org> >> and Cory Watson C<< <gphat at cpan.org> >>.
+
+=head1 TODO
+
+Docs, docs, and more docs. The individual modules have a lot of functionality that needs documented.
+
+=head1 COPYRIGHT & LICENSE
+
+This software is copyright (c) 2012 by Infinity Interactive, Inc..
+
+This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
 
 
 =end :postlude

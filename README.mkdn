@@ -1,8 +1,10 @@
-# DESCRIPTION
+# NAME
 
-Data::Riak is a simple interface to a Riak server. It is not as complete as [Net::Riak](http://search.cpan.org/perldoc?Net::Riak),
-nor does it aim to be; instead, it attempts to make the simple operations very simple,
-while still allowing you to do complicated tasks.
+Data::Riak - An interface to a Riak server.
+
+# VERSION
+
+version 0.1
 
 # SYNOPSIS
 
@@ -30,6 +32,12 @@ while still allowing you to do complicated tasks.
 
     # The HTTP status code, 200 on a successful GET.
     my $code = $foo->code;
+
+# DESCRIPTION
+
+Data::Riak is a simple interface to a Riak server. It is not as complete as [Net::Riak](http://search.cpan.org/perldoc?Net::Riak),
+nor does it aim to be; instead, it attempts to make the simple operations very simple,
+while still allowing you to do complicated tasks.
 
 Get the list of buckets. This is NOT RECOMMENDED for production systems, as Riak
 has to essentially walk the entire database. Here purely as a tool for debugging
@@ -76,5 +84,33 @@ great potential, and it's the one thing we tried to make really simple with Data
 
 The bucket passed in on the riak object's linkwalk is the bucket the original target is in, and is used as a default if you only pass two options in the params lists.
 
+# AUTHOR
+
+Andrew Nelson, `<anelson at cpan.org>`
+
 # ACKNOWLEDGEMENTS
 
+Influenced heavily by [Net::Riak](http://search.cpan.org/perldoc?Net::Riak).
+
+I wrote the first pass of Data::Riak, but large sections were added/fixed/rewritten to not suck by Stevan Little `<stevan at cpan.org>` and Cory Watson `<gphat at cpan.org>`.
+
+# TODO
+
+Docs, docs, and more docs. The individual modules have a lot of functionality that needs documented.
+
+# COPYRIGHT & LICENSE
+
+This software is copyright (c) 2012 by Infinity Interactive, Inc..
+
+This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
+
+# AUTHOR
+
+Andrew Nelson <anelson at cpan.org>
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2012 by Infinity Interactive.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
