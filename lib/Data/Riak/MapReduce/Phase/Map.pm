@@ -57,6 +57,18 @@ has phase => (
   default => 'map'
 );
 
+=attr arg
+
+The static argument passed to the map function.
+
+=cut
+
+has arg => (
+  is => 'ro',
+  isa => 'Str|HashRef',
+  predicate => 'has_arg'
+);
+
 =attr source
 
 The source of the function used in this phase.
@@ -84,6 +96,7 @@ sub pack {
   $href->{language} = $self->language;
   $href->{name} = $self->name if $self->has_name;
   $href->{source} = $self->source if $self->has_source;
+  $href->{arg} = $self->arg if $self->has_arg;
 
   $href;
 }
