@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 
-use Data::Dump;
 use Try::Tiny;
 
 use Test::Fatal;
@@ -22,6 +21,8 @@ my $bucket = Data::Riak::Bucket->new({
     name => $bucket_name,
     riak => $riak
 });
+
+is($bucket->count, 0, 'No keys in the bucket');
 
 my $props = $bucket->props;
 is(ref $props, 'HASH', '... got back a HASH ref');
@@ -46,6 +47,8 @@ is_deeply(
     '... got the keys we expected'
 );
 
+is($bucket->count, 1, 'One key in the bucket');
+
 $bucket->remove('foo');
 try {
     $bucket->get('foo')
@@ -63,6 +66,8 @@ is_deeply(
     ['bar', 'baz', 'foo'],
     '... got the keys we expected'
 );
+
+is($bucket->count, 3, 'Three keys in the bucket');
 
 my $foo = $bucket->get('foo');
 my $bar = $bucket->get('bar');

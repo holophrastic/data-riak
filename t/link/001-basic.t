@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
@@ -10,12 +10,11 @@ use Test::Fatal;
 use Test::Data::Riak;
 
 BEGIN {
+    skip_unless_riak;
     use_ok('Data::Riak::Link');
 }
 
 use Data::Riak;
-
-skip_unless_riak;
 
 my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
 my $bucket_name = create_test_bucket_name;

@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 
-use Data::Dump;
-
 use Test::More;
 use Test::Data::Riak;
 
