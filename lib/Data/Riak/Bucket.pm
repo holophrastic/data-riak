@@ -77,6 +77,8 @@ sub remove {
 sub get {
     my ($self, $key, $opts) = @_;
 
+    die("This method requires a key") unless($key);
+
     $opts ||= {};
 
     confess "This method does not support multipart/mixed responses"
@@ -104,6 +106,11 @@ sub list_keys {
     })->first;
 
     return decode_json( $result->value )->{'keys'};
+}
+
+sub count {
+    my $self = shift;
+    return scalar @{$self->list_keys} || 0;
 }
 
 sub remove_all {
