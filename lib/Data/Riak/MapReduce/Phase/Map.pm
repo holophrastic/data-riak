@@ -69,6 +69,30 @@ has arg => (
   predicate => 'has_arg'
 );
 
+=attr module
+
+The module name, if you are using a riak built-in function.
+
+=cut
+
+has module => (
+  is => 'ro',
+  isa => 'Str',
+  predicate => 'has_module'
+);
+
+=attr function
+
+The function name, if you are using a riak built-in function.
+
+=cut
+
+has function => (
+  is => 'ro',
+  isa => 'Str',
+  predicate => 'has_function'
+);
+
 =attr source
 
 The source of the function used in this phase.
@@ -96,6 +120,8 @@ sub pack {
   $href->{language} = $self->language;
   $href->{name} = $self->name if $self->has_name;
   $href->{source} = $self->source if $self->has_source;
+  $href->{module} = $self->module if $self->has_module;
+  $href->{function} = $self->function if $self->has_function;
   $href->{arg} = $self->arg if $self->has_arg;
 
   $href;

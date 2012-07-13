@@ -6,6 +6,8 @@ use warnings;
 use Moose;
 
 use Data::Riak::Link;
+use Data::Riak::Util::MapCount;
+use Data::Riak::Util::ReduceCount;
 use HTTP::Headers::ActionPack::LinkList;
 
 use JSON::XS qw/decode_json encode_json/;
@@ -110,7 +112,19 @@ sub list_keys {
 
 sub count {
     my $self = shift;
-    return scalar @{$self->list_keys} || 0;
+    my $map_reduce = Data::Riak::MapReduce->new({
+        riak => $self->riak,
+        inputs => $self->name,
+        phases => [
+            Data::Riak::Util::MapCount->new,
+            Data::Riak::Util::ReduceCount->new
+        ]
+    });
+    my $map_reduce_results = $map_reduce->mapreduce;
+    my ( $result ) = $map_reduce_results->results->[0];
+    my ( $count ) = decode_json($result->value) || 0;
+    return $count->[0];
+#    return scalar @{$self->list_keys} || 0;
 }
 
 sub remove_all {

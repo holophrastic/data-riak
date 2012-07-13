@@ -102,7 +102,7 @@ sub send {
 sub _send {
     my ($self, $request) = @_;
 
-    my $uri = URI->new( sprintf('http://%s:%s/%s', $self->host, $self->port, $request->uri) );
+    my $uri = URI->new( sprintf('%s%s', $self->base_uri, $request->uri) );
 
     if ($request->has_query) {
         $uri->query_form($request->query);
