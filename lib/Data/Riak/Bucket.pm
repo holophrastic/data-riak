@@ -124,7 +124,6 @@ sub count {
     my ( $result ) = $map_reduce_results->results->[0];
     my ( $count ) = decode_json($result->value) || 0;
     return $count->[0];
-#    return scalar @{$self->list_keys} || 0;
 }
 
 sub remove_all {

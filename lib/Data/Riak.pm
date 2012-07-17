@@ -48,8 +48,6 @@ while still allowing you to do complicated tasks.
     # The HTTP status code, 200 on a successful GET.
     my $code = $foo->code;
 
-=begin :prelude
-
 =cut
 
 has transport => (
@@ -187,10 +185,6 @@ The bucket passed in on the riak object's linkwalk is the bucket the original ta
 =cut
 
 =begin :postlude
-
-=head1 AUTHOR
-
-Andrew Nelson, C<< <anelson at cpan.org> >>
 
 =head1 ACKNOWLEDGEMENTS
 
