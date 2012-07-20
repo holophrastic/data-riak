@@ -18,10 +18,7 @@ has bucket => (
     lazy => 1,
     default => sub {
         my $self = shift;
-        return Data::Riak::Bucket->new({
-            name => $self->bucket_name,
-            riak => $self->riak
-        });
+        $self->riak->bucket( $self->bucket_name )
     }
 );
 
