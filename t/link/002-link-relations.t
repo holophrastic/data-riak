@@ -46,9 +46,9 @@ common identifier.
 
 $bucket->add( '1234' => '{"username":"bob",email":"bob@example.org"}' );
 $bucket->add( 'bob' => '', {
-	links => [
-		$bucket->create_link( key => '1234', riaktag => 'canonical' )
-	]
+    links => [
+        $bucket->create_link( key => '1234', riaktag => 'canonical' )
+    ]
 });
 
 my $results = $bucket->linkwalk('bob', [ [ 'canonical', 0 ] ]);
