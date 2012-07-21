@@ -1,4 +1,5 @@
 package Data::Riak::Bucket;
+# ABSTRACT: A Data::Riak bucket, used for storing keys and values.
 
 use strict;
 use warnings;
@@ -14,11 +15,53 @@ use JSON::XS qw/decode_json encode_json/;
 
 with 'Data::Riak::Role::HasRiak';
 
+=head1 DESCRIPTION
+
+Data::Riak::Bucket is the primary interface that most people will use for Riak.
+Adding and removing keys and values, adding links, querying keys; all of those
+happen here.
+
+=head SYNOPSIS
+
+    my $bucket = Data::Riak::Bucket->new({
+        name => 'my_bucket',
+        riak => $riak
+    });
+
+    # Sets the value of "foo" to "bar", in my_bucket.
+    $bucket->add('foo', 'bar');
+
+    # Gets the Result object for "foo" in my_bucket.
+    my $foo = $bucket->get('foo');
+
+    # Returns "bar"
+    my $value = $foo->value;
+
+    $bucket->create_alias({ key => 'foo', as => 'alias_to_foo' });
+    $bucket->create_alias({ key => 'foo', as => 'alias_to_foo', in => $another_bucket });
+
+    # Returns "bar"
+    my $value = $bucket->resolve_alias('alias_to_foo');
+    my $value = $another_bucket->resolve_alias('alias_to_foo');
+
+    $bucket->add('baz, 'value of baz', { links => [$bucket->create_link( riaktag => 'buddy', key =>'foo' )] });
+    my $resultset = $bucket->linkwalk('baz', [[ 'buddy', '_' ]]);
+    my $value = $resultset->first->value;   # Will be "bar", the value of foo
+
+=cut
+
 has name => (
     is => 'ro',
     isa => 'Str',
     required => 1
 );
+
+=method add ($key, $value, $opts)
+
+This will insert a key C<$key> into the bucket, with value C<$value>. The C<$opts>
+can include links, allowed content types, or queries.
+
+=cut
 
 sub add {
     my ($self, $key, $value, $opts) = @_;
@@ -62,6 +105,12 @@ sub add {
     return;
 }
 
+=method remove ($key, $opts)
+
+This will remove a key C<$key> from the bucket.
+
+=cut
+
 sub remove {
     my ($self, $key, $opts) = @_;
 
@@ -75,6 +124,13 @@ sub remove {
             : ()),
     });
 }
+
+=method get ($key, $opts)
+
+This will get a key C<$key> from the bucket, returning a L<Data::Riak::Result> object.
+
+=cut
+
 
 sub get {
     my ($self, $key, $opts) = @_;
@@ -98,6 +154,15 @@ sub get {
     })->first;
 }
 
+=method list_keys
+
+List all the keys in the bucket. Warning: This is expensive, as it has to scan
+every key in the system, so don't use it unless you mean it, and know what you're
+doing.
+
+=cut
+
+
 sub list_keys {
     my $self = shift;
 
@@ -109,6 +174,14 @@ sub list_keys {
 
     return decode_json( $result->value )->{'keys'};
 }
+
+=method count
+
+Count all the keys in a bucket. This uses MapReduce to figure out the answer, so
+it's expensive; Riak does not keep metadata on buckets for reasons that are beyond
+the scope of this module (but are well documented, so if you are interested, read up).
+
+=cut
 
 sub count {
     my $self = shift;
@@ -125,6 +198,13 @@ sub count {
     my ( $count ) = decode_json($result->value) || 0;
     return $count->[0];
 }
+
+=method remove_all
+
+Remove all the keys from a bucket. This involves a list_keys call, so it will be
+slow on larger systems.
+
+=cut
 
 sub remove_all {
     my $self = shift;
@@ -188,6 +268,33 @@ sub indexing {
         uri => $self->name,
         data => encode_json($data)
     });
+}
+
+=method create_alias ($opts)
+
+Creates an alias for a record using links. Helpful if your primary ID is a UUID or
+some other automatically generated identifier. Can cross buckets, as well.
+
+    $bucket->create_alias({ key => '123456', as => 'foo' });
+    $bucket->create_alias({ key => '123456', as => 'foo', in => $other_bucket });
+
+=cut
+
+sub create_alias {
+    my ($self, $opts) = @_;
+    my $bucket = $opts->{in} || $self;
+    $bucket->add($opts->{as}, $opts->{key}, { links => [ Data::Riak::Link->new( bucket => $bucket->name, riaktag => 'perl-data-riak-alias', key => $opts->{key} )] });
+}
+
+=method resolve_alias ($alias)
+
+Returns the L<Data::Riak::Result> that $alias points to.
+
+=cut
+
+sub resolve_alias {
+    my ($self, $alias) = @_;
+    return $self->linkwalk($alias, [[ 'perl-data-riak-alias', '_' ]])->first;
 }
 
 __PACKAGE__->meta->make_immutable;

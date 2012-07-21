@@ -4,7 +4,7 @@ Data::Riak - An interface to a Riak server.
 
 # VERSION
 
-version 0.5
+version 0.6
 
 # SYNOPSIS
 
@@ -32,6 +32,8 @@ version 0.5
 
     # The HTTP status code, 200 on a successful GET.
     my $code = $foo->code;
+
+    Most of the interesting methods are really in L<Data::Riak::Bucket>, so please read the documents there as well.
 
 # DESCRIPTION
 

@@ -48,6 +48,8 @@ while still allowing you to do complicated tasks.
     # The HTTP status code, 200 on a successful GET.
     my $code = $foo->code;
 
+    Most of the interesting methods are really in L<Data::Riak::Bucket>, so please read the documents there as well.
+
 =cut
 
 has transport => (
