@@ -36,7 +36,7 @@ $foo->add_link(Data::Riak::Link->new(
     bucket => $bucket->name,
     riaktag => 'buddy',
     key => 'qux'
-));
+))->save;
 
 my $server_foo = $bucket->get('foo');
 

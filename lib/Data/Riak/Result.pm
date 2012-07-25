@@ -130,7 +130,7 @@ sub add_link {
     my $links = $self->links;
     push @{$links}, $link;
     $self->links($links);
-    $self->save;
+    return $self;
 }
 
 __PACKAGE__->meta->make_immutable;
