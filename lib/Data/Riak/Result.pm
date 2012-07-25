@@ -133,6 +133,22 @@ sub add_link {
     return $self;
 }
 
+sub remove_link {
+    my ($self, $args) = @_;
+    my $key = $args->{key};
+    my $riaktag = $args->{riaktag};
+    my $links = $self->links;
+    my $new_links;
+    foreach my $link (@{$links}) {
+        next if($key && $link->has_key && ($key eq $link->key));
+        next if($riaktag && $link->has_riaktag && ($riaktag eq $link->riaktag));
+        push @{$new_links}, $link;
+    }
+    $self->links($new_links);
+    return $self;
+}
+
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 
