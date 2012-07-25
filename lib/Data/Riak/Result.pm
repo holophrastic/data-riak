@@ -124,6 +124,15 @@ sub linkwalk {
     });
 }
 
+sub add_link {
+    my ($self, $link) = @_;
+    return undef unless $link;
+    my $links = $self->links;
+    push @{$links}, $link;
+    $self->links($links);
+    $self->save;
+}
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 
