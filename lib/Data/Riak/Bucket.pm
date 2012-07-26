@@ -9,6 +9,10 @@ use Moose;
 use Data::Riak::Link;
 use Data::Riak::Util::MapCount;
 use Data::Riak::Util::ReduceCount;
+
+use Data::Riak::MapReduce;
+use Data::Riak::MapReduce::Phase::Reduce;
+
 use HTTP::Headers::ActionPack::LinkList;
 
 use JSON::XS qw/decode_json encode_json/;
@@ -84,7 +88,6 @@ sub add {
     # need to support other headers
     #   X-Riak-Vclock if the object already exists, the vector clock attached to the object when read.
     #   X-Riak-Meta-* - any additional metadata headers that should be stored with the object.
-    #   X-Riak-Index-* - index entries under which this object should be indexed. Read more about Secondary Indexing.
     # see http://wiki.basho.com/HTTP-Store-Object.html
     # - SL
 
@@ -93,6 +96,9 @@ sub add {
         uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
         data => $value,
         links => $pack,
+        (exists $opts->{'indexes'}
+            ? (indexes => $opts->{'indexes'})
+            : ()),
         (exists $opts->{'content_type'}
             ? (content_type => $opts->{'content_type'})
             : ()),
@@ -236,6 +242,40 @@ sub linkwalk {
         object => $object,
         params => $params
     });
+}
+
+=method search_index
+
+Searches a Secondary Index to find results.
+
+=cut
+
+sub search_index {
+    my ($self, $opts) = @_;
+    my $field  = $opts->{'field'}  || die 'You must specify a field for searching Secondary indexes';
+    my $values = $opts->{'values'} || die 'You must specify values for searching Secondary indexes';
+
+    my $inputs = { bucket => $self->name, index => $field };
+    if(ref($values) eq 'ARRAY') {
+        $inputs->{'start'} = $values->[0];
+        $inputs->{'end'} = $values->[1];
+    } else {
+        $inputs->{'key'} = $values;
+    }
+
+    my $search_mr = Data::Riak::MapReduce->new({
+        riak => $self->riak,
+        inputs => $inputs,
+        phases => [
+            Data::Riak::MapReduce::Phase::Reduce->new({
+                language => 'erlang',
+                module => 'riak_kv_mapreduce',
+                function => 'reduce_identity',
+                keep => 1
+            })
+        ]
+    });
+    return [ sort map { $_->[1] } @{decode_json($search_mr->mapreduce->results->[0]->value)} ];
 }
 
 sub props {

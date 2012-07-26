@@ -40,6 +40,11 @@ has links => (
     }
 );
 
+has indexes => (
+    is => 'ro',
+    isa => 'ArrayRef[HashRef]'
+);
+
 has content_type => (
     is => 'ro',
     isa => 'Str',

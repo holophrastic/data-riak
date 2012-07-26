@@ -85,7 +85,7 @@ And finally:
 
 has inputs => (
     is => 'ro',
-    isa => 'ArrayRef | Str',
+    isa => 'ArrayRef | Str | HashRef',
     required => 1
 );
 
