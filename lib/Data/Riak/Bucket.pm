@@ -275,7 +275,13 @@ sub search_index {
             })
         ]
     });
-    return [ sort map { $_->[1] } @{decode_json($search_mr->mapreduce->results->[0]->value)} ];
+    return $search_mr->mapreduce->results->[0]->value;
+}
+
+# returns JUST the list of keys. human readable, not designed for MapReduce inputs.
+sub pretty_search_index {
+    my ($self, $opts) = @_;
+    return [ sort map { $_->[1] } @{decode_json($self->search_index($opts))} ];
 }
 
 sub props {

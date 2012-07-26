@@ -66,28 +66,28 @@ $bucket->add(
 
 my $search;
 
-$search = $bucket->search_index({ field => 'email_bin', values => 'example.com' });
+$search = $bucket->pretty_search_index({ field => 'email_bin', values => 'example.com' });
 is_deeply(
     $search,
     [ 'bar-uuid', 'foo-uuid' ],
     '... example.com search returns the expected results'
 );
 
-$search = $bucket->search_index({ field => 'username_bin', values => 'baz' });
+$search = $bucket->pretty_search_index({ field => 'username_bin', values => 'baz' });
 is_deeply(
     $search,
     [ 'baz-uuid' ],
     '... username search for baz returns the expected results'
 );
 
-$search = $bucket->search_index({ field => 'name_bin', values => 'Foo Fooly' });
+$search = $bucket->pretty_search_index({ field => 'name_bin', values => 'Foo Fooly' });
 is_deeply(
     $search,
     [ 'foo-uuid' ],
     '... name search returns the expected results'
 );
 
-$search = $bucket->search_index({ field => 'name_bin', values => 'Barly' });
+$search = $bucket->pretty_search_index({ field => 'name_bin', values => 'Barly' });
 is_deeply(
     $search,
     [ 'bar-uuid', 'baz-uuid' ],
