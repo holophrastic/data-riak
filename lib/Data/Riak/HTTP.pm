@@ -6,7 +6,8 @@ use warnings;
 
 use Moose;
 
-use LWP;
+use LWP::UserAgent;
+use LWP::ConnCache;
 use HTTP::Headers;
 use HTTP::Response;
 use HTTP::Request;
@@ -56,6 +57,45 @@ has timeout => (
     isa => 'Int',
     default => sub {
         $ENV{'DATA_RIAK_HTTP_TIMEOUT'} || '15';
+    }
+);
+
+=attr user_agent
+
+This is the instance of L<LWP::UserAgent> we use to talk to Riak.
+
+=cut
+
+our $CONN_CACHE;
+
+has user_agent => (
+    is => 'ro',
+    isa => 'LWP::UserAgent',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+
+        # NOTE:
+        # Much of the following was copied from
+        # Net::Riak (franck cuny++ && robin edwards++)
+        # - SL
+
+        # The Links header Riak returns (esp. for buckets) can get really long,
+        # so here increase the MaxLineLength LWP will accept (default = 8192)
+        my %opts = @LWP::Protocol::http::EXTRA_SOCK_OPTS;
+        $opts{MaxLineLength} = 65_536;
+        @LWP::Protocol::http::EXTRA_SOCK_OPTS = %opts;
+
+        my $ua = LWP::UserAgent->new(
+            timeout => $self->timeout,
+            keep_alive => 1
+        );
+
+        $CONN_CACHE ||= LWP::ConnCache->new;
+
+        $ua->conn_cache( $CONN_CACHE );
+
+        $ua;
     }
 );
 
@@ -131,9 +171,7 @@ sub _send {
         $request->data
     );
 
-    my $ua = LWP::UserAgent->new(timeout => $self->timeout);
-
-    my $http_response = $ua->request($http_request);
+    my $http_response = $self->user_agent->request($http_request);
 
     my $response = Data::Riak::HTTP::Response->new({
         http_response => $http_response
