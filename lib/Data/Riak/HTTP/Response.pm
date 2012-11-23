@@ -45,6 +45,8 @@ $_deconstruct_parts = sub {
     return map { $_deconstruct_parts->( $_ ) } @parts;
 };
 
+with 'Data::Riak::Transport::Response';
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 
