@@ -8,6 +8,8 @@ use Moose;
 use URL::Encode qw/url_encode url_decode/;
 use HTTP::Headers::ActionPack::LinkHeader;
 
+use namespace::autoclean;
+
 has bucket => (
     is => 'ro',
     isa => 'Str',
@@ -82,7 +84,6 @@ sub as_link_header {
 
 
 __PACKAGE__->meta->make_immutable;
-no Moose;
 
 1;
 

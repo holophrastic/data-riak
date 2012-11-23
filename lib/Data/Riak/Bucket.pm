@@ -17,6 +17,8 @@ use HTTP::Headers::ActionPack::LinkList;
 
 use JSON::XS qw/decode_json encode_json/;
 
+use namespace::autoclean;
+
 with 'Data::Riak::Role::HasRiak';
 
 =head1 DESCRIPTION
@@ -344,7 +346,6 @@ sub resolve_alias {
 }
 
 __PACKAGE__->meta->make_immutable;
-no Moose;
 
 1;
 

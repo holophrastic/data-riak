@@ -1,5 +1,6 @@
 package Data::Riak::MapReduce::Phase::Reduce;
 use Moose;
+use namespace::autoclean;
 
 # ABSTRACT: Reduce phase of a MapReduce
 

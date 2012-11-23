@@ -2,6 +2,7 @@ package Data::Riak::MapReduce::Phase::Link;
 use Moose;
 
 use JSON::XS ();
+use namespace::autoclean;
 
 # ABSTRACT: Link phase of a MapReduce
 

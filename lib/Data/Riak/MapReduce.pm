@@ -12,6 +12,8 @@ use Data::Riak::MapReduce::Phase::Reduce;
 
 use JSON::XS qw/encode_json/;
 
+use namespace::autoclean;
+
 with 'Data::Riak::Role::HasRiak';
 
 =head1 DESCRIPTION
@@ -76,7 +78,7 @@ For a bucket and key (or many!):
   inputs => [ [ "bucketname", "keyname" ] ]
 
   inputs => [ [ "bucketname", "keyname" ], [ "bucketname", "keyname2" ] ]
-  
+
 And finally:
 
   inputs => [ [ "bucketname", "keyname", "keyData" ] ]
@@ -115,7 +117,7 @@ To enable streaming, do the following:
 
 sub mapreduce {
     my ($self, %options) = @_;
-  
+
     return $self->riak->send_request({
         content_type => 'application/json',
         method => 'POST',
@@ -131,7 +133,6 @@ sub mapreduce {
 }
 
 __PACKAGE__->meta->make_immutable;
-no Moose;
 
 1;
 

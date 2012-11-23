@@ -15,6 +15,8 @@ use Data::Riak::MapReduce;
 
 use Data::Riak::HTTP;
 
+use namespace::autoclean;
+
 =head1 DESCRIPTION
 
 Data::Riak is a simple interface to a Riak server. It is not as complete as L<Net::Riak>,
@@ -210,6 +212,5 @@ This is free software; you can redistribute it and/or modify it under the same t
 =cut
 
 __PACKAGE__->meta->make_immutable;
-no Moose;
 
 1;

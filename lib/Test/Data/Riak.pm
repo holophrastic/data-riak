@@ -10,6 +10,7 @@ use Digest::MD5 qw/md5_hex/;
 use Sub::Exporter;
 
 use Data::Riak::HTTP;
+use namespace::clean;
 
 my @exports = qw[
     skip_unless_riak

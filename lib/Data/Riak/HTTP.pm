@@ -16,6 +16,8 @@ use JSON 'decode_json';
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
 
+use namespace::autoclean;
+
 =attr host
 
 The host the Riak server is on. Can be set via the environment variable
@@ -207,6 +209,5 @@ sub _send {
 =cut
 
 __PACKAGE__->meta->make_immutable;
-no Moose;
 
 1;

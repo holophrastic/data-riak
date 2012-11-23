@@ -3,6 +3,7 @@ use Moose;
 use Moose::Util::TypeConstraints;
 
 use JSON::XS ();
+use namespace::autoclean;
 
 # ABSTRACT: Map phase of a MapReduce
 
