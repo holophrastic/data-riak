@@ -18,6 +18,8 @@ use Data::Riak::HTTP::Response;
 
 use namespace::autoclean;
 
+with 'Data::Riak::Transport';
+
 =attr host
 
 The host the Riak server is on. Can be set via the environment variable
