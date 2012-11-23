@@ -7,6 +7,8 @@ use Moose;
 
 use HTTP::Headers::ActionPack::LinkList;
 
+with 'Data::Riak::Transport::Request';
+
 has method => (
     is => 'ro',
     isa => 'Str',
