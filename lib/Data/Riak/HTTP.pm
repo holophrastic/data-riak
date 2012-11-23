@@ -11,6 +11,7 @@ use LWP::ConnCache;
 use HTTP::Headers;
 use HTTP::Response;
 use HTTP::Request;
+use JSON 'decode_json';
 
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
@@ -121,6 +122,22 @@ sub ping {
     my $response = $self->send({ method => 'GET', uri => 'ping' });
     return 0 unless($response->code eq '200');
     return 1;
+}
+
+=method status
+
+Attempts to retrieve information about the performance and configuration of the
+Riak node. Returns a hash reference containing the data provided by the
+C</stats> endpoint of the Riak node or throws an exception if the status
+information could not be retrieved.
+
+=cut
+
+sub status {
+    my ($self) = @_;
+    my $response = $self->send({ method => 'GET', uri => 'stats' });
+    die $response unless $response->is_success;
+    return decode_json $response->http_response->content;
 }
 
 =method send ($request)
