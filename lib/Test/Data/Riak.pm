@@ -13,6 +13,7 @@ use Data::Riak::HTTP;
 
 my @exports = qw[
     skip_unless_riak
+    skip_unless_leveldb_backend
     remove_test_bucket
     create_test_bucket_name
 ];
@@ -33,6 +34,19 @@ sub skip_unless_riak {
         plan skip_all => 'Riak did not answer, skipping tests'
     };
     return $up;
+}
+
+sub skip_unless_leveldb_backend {
+    my $status = try {
+        Data::Riak::HTTP->new->status;
+    }
+    catch {
+        plan skip_all => "Failed to identify the Riak node's storage backend";
+    };
+
+    plan skip_all => 'This test requires the leveldb Riak storage backend'
+        unless $status->{storage_backend} eq 'riak_kv_eleveldb_backend';
+    return;
 }
 
 sub remove_test_bucket {

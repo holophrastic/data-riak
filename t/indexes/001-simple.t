@@ -11,6 +11,7 @@ use Data::Riak::Bucket;
 
 BEGIN {
     skip_unless_riak;
+    skip_unless_leveldb_backend;
 }
 
 my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
