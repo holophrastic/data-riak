@@ -143,7 +143,7 @@ This will get a key C<$key> from the bucket, returning a L<Data::Riak::Result> o
 sub get {
     my ($self, $key, $opts) = @_;
 
-    die("This method requires a key") unless($key);
+    confess "This method requires a key" unless $key;
 
     $opts ||= {};
 
@@ -254,8 +254,8 @@ Searches a Secondary Index to find results.
 
 sub search_index {
     my ($self, $opts) = @_;
-    my $field  = $opts->{'field'}  || die 'You must specify a field for searching Secondary indexes';
-    my $values = $opts->{'values'} || die 'You must specify values for searching Secondary indexes';
+    my $field  = $opts->{'field'}  || confess 'You must specify a field for searching Secondary indexes';
+    my $values = $opts->{'values'} || confess 'You must specify values for searching Secondary indexes';
 
     my $inputs = { bucket => $self->name, index => $field };
     if(ref($values) eq 'ARRAY') {
