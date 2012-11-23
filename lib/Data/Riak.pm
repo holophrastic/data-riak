@@ -14,6 +14,7 @@ use Data::Riak::Bucket;
 use Data::Riak::MapReduce;
 
 use Data::Riak::HTTP;
+use Data::Riak::TransportException;
 
 use namespace::autoclean;
 
@@ -71,9 +72,11 @@ sub send_request {
     my $transport_request = $self->transport->create_request($request);
     my $response = $self->transport->send($transport_request);
 
-    if ($response->is_error) {
-        die $response;
-    }
+    Data::Riak::TransportException->throw({
+        message  => $response->http_response->message, # FIXME
+        request  => $transport_request,
+        response => $response,
+    }) if $response->is_error;
 
     my @parts = @{ $response->parts };
 
