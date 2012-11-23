@@ -60,6 +60,7 @@ has transport => (
     required => 1,
     handles => {
         'ping' => 'ping',
+        'status' => 'status',
         'base_uri' => 'base_uri'
     }
 );
