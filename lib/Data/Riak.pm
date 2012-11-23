@@ -68,7 +68,8 @@ has transport => (
 sub send_request {
     my ($self, $request) = @_;
 
-    my $response = $self->transport->send($request);
+    my $transport_request = $self->transport->create_request($request);
+    my $response = $self->transport->send($transport_request);
 
     if ($response->is_error) {
         die $response;

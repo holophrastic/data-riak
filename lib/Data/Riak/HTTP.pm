@@ -121,7 +121,9 @@ Tests to see if the specified Riak server is answering. Returns 0 for no, 1 for 
 
 sub ping {
     my $self = shift;
-    my $response = $self->send({ method => 'GET', uri => 'ping' });
+    my $response = $self->send(
+        $self->create_request({ method => 'GET', uri => 'ping' }),
+    );
     return 0 unless($response->code eq '200');
     return 1;
 }
@@ -137,9 +139,20 @@ information could not be retrieved.
 
 sub status {
     my ($self) = @_;
-    my $response = $self->send({ method => 'GET', uri => 'stats' });
+    my $response = $self->send(
+        $self->create_request({ method => 'GET', uri => 'stats' }),
+    );
     die $response unless $response->is_success;
     return decode_json $response->http_response->content;
+}
+
+sub create_request {
+    my ($self, $request) = @_;
+
+    return Data::Riak::HTTP::Request->new($request)
+        unless blessed $request;
+
+    return $request;
 }
 
 =method send ($request)
@@ -151,11 +164,7 @@ create the Request object for you on the fly.
 
 sub send {
     my ($self, $request) = @_;
-    unless(blessed $request) {
-        $request = Data::Riak::HTTP::Request->new($request);
-    }
-    my $response = $self->_send($request);
-    return $response;
+    return $self->_send($request);
 }
 
 sub _send {
