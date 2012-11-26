@@ -55,7 +55,8 @@ sub remove_test_bucket {
 
     try {
         $bucket->remove_all;
-        Test::More::diag "Removing test bucket so sleeping for a moment to allow riak to eventually be consistent ...";
+        Test::More::diag "Removing test bucket so sleeping for a moment to allow riak to eventually be consistent ..."
+              if $ENV{HARNESS_IS_VERBOSE};
         my $keys = $bucket->list_keys;
         while ( $keys && @$keys ) {
             sleep(1);
