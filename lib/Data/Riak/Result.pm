@@ -26,7 +26,6 @@ has location => (
     is => 'ro',
     isa => 'URI',
     lazy => 1,
-    clearer => '_clear_location',
     default => sub {
         my $self = shift;
         return $self->http_message->request->uri if $self->http_message->can('request');
@@ -60,7 +59,6 @@ has links => (
     is => 'rw',
     isa => 'ArrayRef[Data::Riak::Link]',
     lazy => 1,
-    clearer => '_clear_links',
     default => sub {
         my $self = shift;
         my $links = $self->http_message->header('link');
