@@ -327,6 +327,8 @@ sub indexing {
         content_type => 'application/json',
         uri => $self->name,
         data => encode_json($data)
+    }, {
+        result_class => Data::Riak::Result::,
     });
 }
 
