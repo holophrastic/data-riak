@@ -9,6 +9,7 @@ use Moose;
 use JSON::XS qw/decode_json/;
 
 use Data::Riak::Result;
+use Data::Riak::Result::Object;
 use Data::Riak::ResultSet;
 use Data::Riak::Bucket;
 use Data::Riak::MapReduce;
@@ -67,7 +68,9 @@ has transport => (
 );
 
 sub send_request {
-    my ($self, $request) = @_;
+    my ($self, $request, $response_class) = @_;
+
+    confess 'no response class' unless $response_class;
 
     my $transport_request = $self->transport->create_request($request);
     my $response = $self->transport->send($transport_request);
@@ -81,13 +84,9 @@ sub send_request {
     my @parts = @{ $response->parts };
 
     return unless @parts;
-    return Data::Riak::ResultSet->new({
-        results => [
-            map {
-                Data::Riak::Result->new({ riak => $self, http_message => $_ })
-            } @parts
-        ]
-    });
+    return Data::Riak::ResultSet->new(
+        results => [$response->create_results($self, $response_class)],
+    );
 }
 
 =method _buckets
@@ -147,7 +146,7 @@ sub linkwalk {
     return $self->send_request({
         method => 'GET',
         uri => $request_str
-    });
+    }, Data::Riak::Result::Object::);
 }
 
 =pod

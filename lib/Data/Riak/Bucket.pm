@@ -9,6 +9,8 @@ use Moose;
 use Data::Riak::Link;
 use Data::Riak::Util::MapCount;
 use Data::Riak::Util::ReduceCount;
+use Data::Riak::Result;
+use Data::Riak::Result::Object;
 
 use Data::Riak::MapReduce;
 use Data::Riak::MapReduce::Phase::Reduce;
@@ -107,7 +109,7 @@ sub add {
         (exists $opts->{'query'}
             ? (query => $opts->{'query'})
             : ()),
-    });
+    }, Data::Riak::Result::Object::);
 
     return $resultset->first if $resultset;
     return;
@@ -130,7 +132,7 @@ sub remove {
         (exists $opts->{'query'}
             ? (query => $opts->{'query'})
             : ()),
-    });
+    }, Data::Riak::Result::Object::);
 }
 
 =method get ($key, $opts)
@@ -159,7 +161,7 @@ sub get {
         (exists $opts->{'query'}
             ? (query => $opts->{'query'})
             : ()),
-    })->first;
+    }, Data::Riak::Result::Object::)->first;
 }
 
 =method list_keys
@@ -178,7 +180,7 @@ sub list_keys {
         method => 'GET',
         uri => sprintf('buckets/%s/keys', $self->name),
         query => { keys => 'true' }
-    })->first;
+    }, Data::Riak::Result::)->first;
 
     return decode_json( $result->value )->{'keys'};
 }
@@ -292,7 +294,7 @@ sub props {
     my $result = $self->riak->send_request({
         method => 'GET',
         uri => sprintf('buckets/%s/props', $self->name)
-    })->first;
+    }, Data::Riak::Result::)->first;
 
     return decode_json( $result->value )->{'props'};
 }

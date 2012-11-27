@@ -6,6 +6,7 @@ use warnings;
 # ABSTRACT: A map/reduce query
 
 use Moose;
+use Data::Riak::Result;
 use Data::Riak::MapReduce::Phase::Link;
 use Data::Riak::MapReduce::Phase::Map;
 use Data::Riak::MapReduce::Phase::Reduce;
@@ -129,7 +130,7 @@ sub mapreduce {
         ($options{'chunked'}
             ? (query => { chunked => 'true' })
             : ()),
-    });
+    }, Data::Riak::Result::);
 }
 
 __PACKAGE__->meta->make_immutable;

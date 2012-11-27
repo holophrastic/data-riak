@@ -37,8 +37,6 @@ is($obj->bucket_name, $bucket->name, '... the name of the bucket is as expected'
 is($obj->location, ($obj->riak->base_uri . 'buckets/' . $bucket->name . '/keys/foo'), '... got the right location of the object');
 is($obj->value, 'bar', '... the value is bar');
 
-my $old_http_message = $obj->http_message;
-
 $bucket->add('foo', 'baz');
 
 is(exception {
@@ -49,8 +47,6 @@ is($obj->key, 'foo', '... the name of the item is foo');
 is($obj->bucket_name, $bucket->name, '... the name of the bucket is as expected');
 is($obj->location, ($obj->riak->base_uri . 'buckets/' . $bucket->name . '/keys/foo'), '... got the right location of the object');
 is($obj->value, 'baz', '... the value is bar');
-
-isnt($old_http_message, $obj->http_message, '... the underlying HTTP message object changed');
 
 remove_test_bucket($bucket);
 

@@ -8,7 +8,7 @@ use Moose;
 use Data::Riak::Link;
 
 use URI;
-use HTTP::Headers::ActionPack;
+use HTTP::Headers::ActionPack 0.05;
 
 with 'Data::Riak::Role::HasRiak';
 
@@ -19,39 +19,6 @@ has bucket => (
     default => sub {
         my $self = shift;
         $self->riak->bucket( $self->bucket_name )
-    }
-);
-
-has location => (
-    is => 'ro',
-    isa => 'URI',
-    lazy => 1,
-    default => sub {
-        my $self = shift;
-        return $self->http_message->request->uri if $self->http_message->can('request');
-        return URI->new( $self->http_message->header('location') || die "Cannot determine location from " . $self->http_message );
-    }
-);
-
-has bucket_name => (
-    is => 'ro',
-    isa => 'Str',
-    lazy => 1,
-    default => sub {
-        my $self = shift;
-        my @uri_parts = split /\//, $self->location->path;
-        return $uri_parts[$#uri_parts - 2];
-    }
-);
-
-has key => (
-    is => 'ro',
-    isa => 'Str',
-    lazy => 1,
-    default => sub {
-        my $self = shift;
-        my @uri_parts = split /\//, $self->location->path;
-        return $uri_parts[$#uri_parts];
     }
 );
 
@@ -69,27 +36,14 @@ has links => (
     }
 );
 
-has http_message => (
-    is => 'rw',
-    isa => 'HTTP::Message',
-    required => 1,
-    handles => {
-        'status_code' => 'code',
-        'value' => 'content',
-        'header' => 'header',
-        'headers' => 'headers',
-        # curried delegation
-        'etag' => [ 'header' => 'etag' ],
-        'content_type' => [ 'header' => 'content-type' ],
-        'vector_clock' => [ 'header' => 'x-riak-vclock' ],
-        'last_modified' => [ 'header' => 'last_modified' ]
-    }
+has [qw(status_code etag content_type vector_clock last_modified)] => (
+    is => 'ro',
 );
 
-sub BUILD {
-    my $self = shift;
-    HTTP::Headers::ActionPack->new->inflate( $self->http_message->headers );
-}
+has value => (
+    is  => 'rw', # for ->save
+    isa => 'Str',
+);
 
 sub create_link {
     my ($self, %opts) = @_;
