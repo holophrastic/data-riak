@@ -68,9 +68,10 @@ has transport => (
 );
 
 sub send_request {
-    my ($self, $request, $response_class) = @_;
+    my ($self, $request, $args) = @_;
 
-    confess 'no response class' unless $response_class;
+    confess 'no result class'
+        unless exists $args->{result_class};
 
     my $transport_request = $self->transport->create_request($request);
     my $response = $self->transport->send($transport_request);
@@ -85,7 +86,7 @@ sub send_request {
 
     return unless @parts;
     return Data::Riak::ResultSet->new(
-        results => [$response->create_results($self, $response_class)],
+        results => [$response->create_results($self, $args->{result_class})],
     );
 }
 
@@ -146,7 +147,9 @@ sub linkwalk {
     return $self->send_request({
         method => 'GET',
         uri => $request_str
-    }, Data::Riak::Result::Object::);
+    }, {
+        result_class => Data::Riak::Result::Object::,
+    });
 }
 
 =pod

@@ -130,7 +130,9 @@ sub mapreduce {
         ($options{'chunked'}
             ? (query => { chunked => 'true' })
             : ()),
-    }, Data::Riak::Result::);
+    }, {
+        result_class => Data::Riak::Result::,
+    });
 }
 
 __PACKAGE__->meta->make_immutable;
