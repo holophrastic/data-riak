@@ -69,7 +69,6 @@ sub _create_result {
 
     HTTP::Headers::ActionPack->new->inflate( $http_message->headers );
 
-    my $links = $http_message->header('link');
     my %result_args = (
         riak          => $riak,
         status_code   => $self->http_response->code,
@@ -77,9 +76,6 @@ sub _create_result {
         (map {
             ($_ => scalar $http_message->header($header_values{$_}))
         } keys %header_values),
-        links         => [map {
-            Data::Riak::Link->from_link_header($_)
-        } $links ? $links->iterable : ()],
     );
 
     if ($result_class->does('Data::Riak::Result::WithLocation')) {
@@ -87,6 +83,13 @@ sub _create_result {
             ? $http_message->request->uri
             : (URI->new( $http_message->header('location') )
                    || die 'Cannot determine location from ' . $http_message);
+    }
+
+    if ($result_class->does('Data::Riak::Result::WithLinks')) {
+        my $links = $http_message->header('link');
+        $result_args{links} = [map {
+            Data::Riak::Link->from_link_header($_)
+        } $links ? $links->iterable : ()],
     }
 
     return $result_class->new(\%result_args);
