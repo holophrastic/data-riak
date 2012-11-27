@@ -25,15 +25,6 @@ has bucket => (
 has links => (
     is => 'rw',
     isa => 'ArrayRef[Data::Riak::Link]',
-    lazy => 1,
-    default => sub {
-        my $self = shift;
-        my $links = $self->http_message->header('link');
-        return [] unless $links;
-        return [ map {
-            Data::Riak::Link->from_link_header( $_ )
-        } $links->iterable ];
-    }
 );
 
 has [qw(status_code etag content_type vector_clock last_modified)] => (
