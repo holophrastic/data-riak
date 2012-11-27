@@ -104,6 +104,12 @@ has user_agent => (
     }
 );
 
+has client_id => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => sub { sprintf '%s/%s', __PACKAGE__, our $VERSION // 'git' },
+);
+
 =method base_uri
 
 The base URI for the Riak server.
@@ -179,6 +185,7 @@ sub _send {
     }
 
     my $headers = HTTP::Headers->new(
+        'X-Riak-ClientId' => $self->client_id,
         ($request->method eq 'GET' ? ('Accept' => $request->accept) : ()),
         ($request->method eq 'POST' || $request->method eq 'PUT' ? ('Content-Type' => $request->content_type) : ()),
     );
