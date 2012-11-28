@@ -165,8 +165,7 @@ sub create_request {
 
 =method send ($request)
 
-Send a Data::Riak::HTTP::Request to the server. If you pass in a hashref, it will
-create the Request object for you on the fly.
+Send a Data::Riak::HTTP::Request to the server.
 
 =cut
 
