@@ -9,7 +9,10 @@ sub as_http_request_args {
     return {
         method => 'GET',
         uri    => sprintf('buckets/%s/keys', $self->bucket_name),
-        query  => { keys => 'true' },
+        query  => {
+            keys  => 'true',
+            props => 'false',
+        },
     };
 }
 
