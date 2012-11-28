@@ -15,16 +15,6 @@ sub as_http_request_args {
     };
 }
 
-has http_exception_classes => (
-    traits  => ['Hash'],
-    is      => 'ro',
-    isa     => 'HashRef[Str]',
-    builder => '_build_http_exception_classes',
-    handles => {
-        exception_class_for_http_status => 'get',
-    },
-);
-
 sub _build_http_exception_classes {
     return {
         300 => Data::Riak::Exception::MultipleSiblingsAvailable::,
