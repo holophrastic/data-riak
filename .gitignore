@@ -1,2 +1,4 @@
 __NOTES__.txt
 000-cleanup.t
+.*
+!.gitignore
