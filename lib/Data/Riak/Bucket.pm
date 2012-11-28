@@ -96,21 +96,16 @@ sub add {
     # - SL
 
     my $resultset = $self->riak->send_request({
-        method => 'PUT',
-        uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
-        data => $value,
-        links => $pack,
-        (exists $opts->{'indexes'}
-            ? (indexes => $opts->{'indexes'})
-            : ()),
-        (exists $opts->{'content_type'}
-            ? (content_type => $opts->{'content_type'})
-            : ()),
-        (exists $opts->{'query'}
-            ? (query => $opts->{'query'})
-            : ()),
-    }, {
-        result_class => Data::Riak::Result::Object::,
+        type        => 'StoreObject',
+        bucket_name => $self->name,
+        key         => $key,
+        value       => $value,
+        links       => $pack,
+        return_body => $opts->{return_body},
+        (exists $opts->{content_type}
+             ? (content_type => $opts->{content_type}) : ()),
+        (exists $opts->{indexes}
+             ? (indexes => $opts->{indexes}) : ()),
     });
 
     return $resultset->first if $resultset;
@@ -129,13 +124,12 @@ sub remove {
     $opts ||= {};
 
     return $self->riak->send_request({
-        method => 'DELETE',
-        uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
+        type        => 'RemoveObject',
+        bucket_name => $self->name,
+        key         => $key,
         (exists $opts->{'query'}
             ? (query => $opts->{'query'})
             : ()),
-    }, {
-        result_class => Data::Riak::Result::Object::,
     });
 }
 
@@ -157,16 +151,15 @@ sub get {
         if exists $opts->{'accept'} && $opts->{'accept'} eq 'multipart/mixed';
 
     return $self->riak->send_request({
-        method => 'GET',
-        uri => sprintf('buckets/%s/keys/%s', $self->name, $key),
+        type        => 'GetObject',
+        bucket_name => $self->name,
+        key         => $key,
         (exists $opts->{'accept'}
             ? (accept => $opts->{'accept'})
             : ()),
         (exists $opts->{'query'}
             ? (query => $opts->{'query'})
             : ()),
-    }, {
-        result_class => Data::Riak::Result::Object::,
     })->first;
 }
 
@@ -183,11 +176,8 @@ sub list_keys {
     my $self = shift;
 
     my $result = $self->riak->send_request({
-        method => 'GET',
-        uri => sprintf('buckets/%s/keys', $self->name),
-        query => { keys => 'true' }
-    }, {
-        result_class => Data::Riak::Result::,
+        type        => 'ListBucketKeys',
+        bucket_name => $self->name,
     })->first;
 
     return decode_json( $result->value )->{'keys'};
@@ -300,10 +290,8 @@ sub props {
     my $self = shift;
 
     my $result = $self->riak->send_request({
-        method => 'GET',
-        uri => sprintf('buckets/%s/props', $self->name)
-    }, {
-        result_class => Data::Riak::Result::,
+        type        => 'GetBucketProps',
+        bucket_name => $self->name,
     })->first;
 
     return decode_json( $result->value )->{'props'};
@@ -327,8 +315,6 @@ sub indexing {
         content_type => 'application/json',
         uri => $self->name,
         data => encode_json($data)
-    }, {
-        result_class => Data::Riak::Result::,
     });
 }
 

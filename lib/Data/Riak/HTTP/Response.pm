@@ -50,10 +50,10 @@ $_deconstruct_parts = sub {
 with 'Data::Riak::Transport::Response';
 
 sub create_results {
-    my ($self, $riak, $result_class) = @_;
+    my ($self, $riak, $request) = @_;
 
     return map {
-        $self->_create_result($riak, $result_class, $_)
+        $self->_create_result($riak, $request, $_)
     } @{ $self->parts };
 }
 
@@ -65,7 +65,7 @@ my %header_values = (
 );
 
 sub _create_result {
-    my ($self, $riak, $result_class, $http_message) = @_;
+    my ($self, $riak, $request, $http_message) = @_;
 
     HTTP::Headers::ActionPack->new->inflate( $http_message->headers );
 
@@ -78,21 +78,21 @@ sub _create_result {
         } keys %header_values),
     );
 
-    if ($result_class->does('Data::Riak::Result::WithLocation')) {
+    if ($request->result_does('Data::Riak::Result::WithLocation')) {
         $result_args{location} = $http_message->can('request')
             ? $http_message->request->uri
             : (URI->new( $http_message->header('location') )
                    || die 'Cannot determine location from ' . $http_message);
     }
 
-    if ($result_class->does('Data::Riak::Result::WithLinks')) {
+    if ($request->result_does('Data::Riak::Result::WithLinks')) {
         my $links = $http_message->header('link');
         $result_args{links} = [map {
             Data::Riak::Link->from_link_header($_)
         } $links ? $links->iterable : ()],
     }
 
-    return $result_class->new(\%result_args);
+    return $request->new_result(\%result_args);
 }
 
 __PACKAGE__->meta->make_immutable;

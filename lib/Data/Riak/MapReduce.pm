@@ -120,18 +120,14 @@ sub mapreduce {
     my ($self, %options) = @_;
 
     return $self->riak->send_request({
-        content_type => 'application/json',
-        method => 'POST',
-        uri => 'mapred',
-        data => encode_json({
+        type => 'MapReduce',
+        data => {
             inputs => $self->inputs,
             query => [ map { { $_->phase => $_->pack } } @{ $self->phases } ]
-        }),
+        },
         ($options{'chunked'}
-            ? (query => { chunked => 'true' })
+            ? (chunked => 1)
             : ()),
-    }, {
-        result_class => Data::Riak::Result::,
     });
 }
 

@@ -34,7 +34,7 @@ my $bucket = Data::Riak::Bucket->new({
 }
 
 {
-    my $obj = $bucket->add('bar', 'baz', { query => { returnbody => 'true' } });
+    my $obj = $bucket->add('bar', 'baz', { return_body => 1 });
     ok(defined $obj, '... something was returned');
     isa_ok($obj, 'Data::Riak::Result');
 

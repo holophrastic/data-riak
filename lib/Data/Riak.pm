@@ -7,6 +7,7 @@ use warnings;
 use Moose;
 
 use JSON::XS qw/decode_json/;
+use Class::Load 'load_class';
 
 use Data::Riak::Result;
 use Data::Riak::Result::Object;
@@ -15,7 +16,6 @@ use Data::Riak::Bucket;
 use Data::Riak::MapReduce;
 
 use Data::Riak::HTTP;
-use Data::Riak::TransportException;
 
 use namespace::autoclean;
 
@@ -61,33 +61,94 @@ has transport => (
     isa => 'Data::Riak::HTTP',
     required => 1,
     handles => {
-        'ping' => 'ping',
-        'status' => 'status',
         'base_uri' => 'base_uri'
     }
 );
 
+has request_classes => (
+    traits  => ['Hash'],
+    is      => 'ro',
+    isa     => 'HashRef[Str]',
+    builder => '_build_request_classes',
+    handles => {
+        _available_request_classes => 'values',
+        request_class_for          => 'get',
+        has_request_class_for      => 'exists',
+    },
+);
+
+sub _build_request_classes {
+    return +{
+        (map {
+            ($_ => 'Data::Riak::Request::' . $_),
+        } qw(MapReduce Ping GetBucketProps StoreObject GetObject
+             ListBucketKeys RemoveObject LinkWalk Status ListBuckets)),
+    }
+}
+
+sub BUILD {
+    my ($self) = @_;
+
+    load_class $_
+        for $self->_available_request_classes;
+}
+
+sub _create_request {
+    my ($self, $args) = @_;
+
+    my %args_copy = %{ $args };
+    my $type = delete $args_copy{type};
+
+    confess sprintf 'Unknown request class %s', $type
+        unless $self->has_request_class_for($type);
+
+    return $self->request_class_for($type)->new(\%args_copy);
+}
+
 sub send_request {
-    my ($self, $request, $args) = @_;
+    my ($self, $request_data) = @_;
 
-    confess 'no result class'
-        unless exists $args->{result_class};
-
-    my $transport_request = $self->transport->create_request($request);
+    my $domain_request = $self->_create_request($request_data);
+    my $transport_request = $self->transport->create_request($domain_request);
     my $response = $self->transport->send($transport_request);
-
-    Data::Riak::TransportException->throw({
-        message  => $response->http_response->message, # FIXME
-        request  => $transport_request,
-        response => $response,
-    }) if $response->is_error;
 
     my @parts = @{ $response->parts };
 
     return unless @parts;
     return Data::Riak::ResultSet->new(
-        results => [$response->create_results($self, $args->{result_class})],
+        results => [$response->create_results($self, $domain_request)],
     );
+}
+
+=method ping
+
+Tests to see if the specified Riak server is answering. Returns 0 for no, 1 for
+yes.
+
+=cut
+
+sub ping {
+    my ($self) = @_;
+
+    my $response = $self->send_request({ type => 'Ping' });
+    return 0 unless($response->first->status_code eq '200');
+    return 1;
+
+}
+
+=method status
+
+Attempts to retrieve information about the performance and configuration of the
+Riak node. Returns a hash reference containing the data provided by the
+C</stats> endpoint of the Riak node or throws an exception if the status
+information could not be retrieved.
+
+=cut
+
+sub status {
+    my ($self) = @_;
+    my $response = $self->send_request({ type => 'Status' });
+    return decode_json $response->first->value;
 }
 
 =method _buckets
@@ -102,11 +163,9 @@ sub _buckets {
     my $self = shift;
     return decode_json(
         $self->send_request({
-            method => 'GET',
-            uri => '/buckets',
-            query => { buckets => 'true' }
+            type => 'ListBuckets',
         })->first->value
-    );
+    )->{buckets};
 }
 
 =method bucket ($name)
@@ -133,22 +192,11 @@ sub linkwalk {
     my $object = $args->{object} || confess 'You must have an object to linkwalk';
     my $bucket = $args->{bucket} || confess 'You must have a bucket for the original object to linkwalk';
 
-    my $request_str = "buckets/$bucket/keys/$object/";
-    my $params = $args->{params};
-
-    foreach my $depth (@$params) {
-        if(scalar @{$depth} == 2) {
-            unshift @{$depth}, $bucket;
-        }
-        my ($buck, $tag, $keep) = @{$depth};
-        $request_str .= "$buck,$tag,$keep/";
-    }
-
     return $self->send_request({
-        method => 'GET',
-        uri => $request_str
-    }, {
-        result_class => Data::Riak::Result::Object::,
+        type => 'LinkWalk',
+        bucket_name => $bucket,
+        key => $object,
+        params => $args->{params},
     });
 }
 

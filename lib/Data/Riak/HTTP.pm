@@ -16,6 +16,8 @@ use JSON 'decode_json';
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
 
+use Data::Riak::TransportException;
+
 use namespace::autoclean;
 
 with 'Data::Riak::Transport';
@@ -121,46 +123,9 @@ sub base_uri {
     return sprintf('http://%s:%s/', $self->host, $self->port);
 }
 
-=method ping
-
-Tests to see if the specified Riak server is answering. Returns 0 for no, 1 for yes.
-
-=cut
-
-sub ping {
-    my $self = shift;
-    my $response = $self->send(
-        $self->create_request({ method => 'GET', uri => 'ping' }),
-    );
-    return 0 unless($response->code eq '200');
-    return 1;
-}
-
-=method status
-
-Attempts to retrieve information about the performance and configuration of the
-Riak node. Returns a hash reference containing the data provided by the
-C</stats> endpoint of the Riak node or throws an exception if the status
-information could not be retrieved.
-
-=cut
-
-sub status {
-    my ($self) = @_;
-    my $response = $self->send(
-        $self->create_request({ method => 'GET', uri => 'stats' }),
-    );
-    die $response unless $response->is_success;
-    return decode_json $response->http_response->content;
-}
-
 sub create_request {
     my ($self, $request) = @_;
-
-    return Data::Riak::HTTP::Request->new($request)
-        unless blessed $request;
-
-    return $request;
+    return Data::Riak::HTTP::Request->new($request->as_http_request_args);
 }
 
 =method send ($request)
@@ -171,7 +136,15 @@ Send a Data::Riak::HTTP::Request to the server.
 
 sub send {
     my ($self, $request) = @_;
-    return $self->_send($request);
+    my $response = $self->_send($request);
+
+    Data::Riak::TransportException->throw({
+        message  => $response->http_response->message, # FIXME
+        request  => $request,
+        response => $response,
+    }) if $response->is_error;
+
+    return $response;
 }
 
 sub _send {

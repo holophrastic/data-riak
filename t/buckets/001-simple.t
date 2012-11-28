@@ -84,6 +84,11 @@ is(scalar @{$resultset->results}, 2, 'Got two Riak::Results back from linkwalkin
 my $dw_results = $bucket->linkwalk('bar', [ [ 'buddy', '_' ], [ $bucket_name, 'not a buddy', '_' ] ]);
 is(scalar $dw_results->all, 2, 'Got two Riak::Results back from linkwalking bar');
 
+{
+    ok +(grep { $_ eq $bucket_name } @{ $riak->_buckets }),
+       '_buckets lists our new bucket';
+}
+
 remove_test_bucket($bucket);
 
 done_testing;

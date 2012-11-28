@@ -9,6 +9,7 @@ use Digest::MD5 qw/md5_hex/;
 
 use Sub::Exporter;
 
+use Data::Riak;
 use Data::Riak::HTTP;
 use namespace::clean;
 
@@ -30,7 +31,9 @@ sub create_test_bucket_name {
 }
 
 sub skip_unless_riak {
-    my $up = Data::Riak::HTTP->new->ping;
+    my $up = Data::Riak->new({
+        transport => Data::Riak::HTTP->new,
+    })->ping;
     unless($up) {
         plan skip_all => 'Riak did not answer, skipping tests'
     };
@@ -39,9 +42,12 @@ sub skip_unless_riak {
 
 sub skip_unless_leveldb_backend {
     my $status = try {
-        Data::Riak::HTTP->new->status;
+        Data::Riak->new({
+            transport => Data::Riak::HTTP->new,
+        })->status;
     }
     catch {
+        warn $_;
         plan skip_all => "Failed to identify the Riak node's storage backend";
     };
 

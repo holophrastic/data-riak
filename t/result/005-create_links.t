@@ -22,8 +22,8 @@ my $bucket = Data::Riak::Bucket->new({
 
 my ($bar, $baz);
 is(exception {
-    $bar = $bucket->add('bar', 'value of bar', { query => { returnbody => 'true' } });
-    $baz = $bucket->add('baz', 'value of baz', { query => { returnbody => 'true' } });
+    $bar = $bucket->add('bar', 'value of bar', { return_body => 1 });
+    $baz = $bucket->add('baz', 'value of baz', { return_body => 1 });
 }, undef, '... no exception while items');
 
 my $bar_link = $bar->create_link(riaktag => 'not a buddy');
