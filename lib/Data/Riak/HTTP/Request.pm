@@ -12,7 +12,7 @@ with 'Data::Riak::Transport::Request';
 has method => (
     is => 'ro',
     isa => 'Str',
-    default => 'GET'
+    required => 1,
 );
 
 has uri => (

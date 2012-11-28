@@ -71,7 +71,7 @@ sub _create_result {
 
     my %result_args = (
         riak          => $riak,
-        status_code   => $self->http_response->code,
+        status_code   => $self->http_response->code, # FIXME: http specific
         value         => $http_message->content,
         (map {
             ($_ => scalar $http_message->header($header_values{$_}))
