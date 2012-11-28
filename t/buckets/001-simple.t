@@ -53,8 +53,13 @@ $bucket->remove('foo');
 try {
     $bucket->get('foo')
 } catch {
-    is($_->value, "not found\n", "Calling for a value that doesn't exist returns not found");
-    is($_->code, "404", "Calling for a value that doesn't exist returns 404");
+    isa_ok $_, 'Data::Riak::Exception::ObjectNotFound';
+    like $_, qr/Object not found/;
+    isa_ok $_->request, 'Data::Riak::Request::GetObject';
+    is $_->request->bucket_name, $bucket_name;
+    is $_->request->key, 'foo';
+    is $_->transport_response->code, "404",
+        "Calling for a value that doesn't exist returns 404";
 };
 
 $bucket->add('bar', 'value of bar', { links => [Data::Riak::Link->new( bucket => $bucket_name, riaktag => 'buddy', key =>'foo' )] });

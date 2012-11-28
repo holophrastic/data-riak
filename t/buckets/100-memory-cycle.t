@@ -38,7 +38,7 @@ $bucket->remove('foo');
 try {
     $bucket->get('foo');
 } catch {
-    is($_->code, "404", "Calling for a value that doesn't exist returns 404");
+    isa_ok $_, 'Data::Riak::Exception::ObjectNotFound';
 };
 
 memory_cycle_ok($obj, '... object is cycle free');

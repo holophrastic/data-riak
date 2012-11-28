@@ -108,15 +108,14 @@ sub _create_request {
 sub send_request {
     my ($self, $request_data) = @_;
 
-    my $domain_request = $self->_create_request($request_data);
-    my $transport_request = $self->transport->create_request($domain_request);
-    my $response = $self->transport->send($transport_request);
+    my $request = $self->_create_request($request_data);
+    my $response = $self->transport->send($request);
 
     my @parts = @{ $response->parts };
 
     return unless @parts;
     return Data::Riak::ResultSet->new(
-        results => [$response->create_results($self, $domain_request)],
+        results => [$response->create_results($self, $request)],
     );
 }
 

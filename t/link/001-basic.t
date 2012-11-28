@@ -30,8 +30,7 @@ isa_ok($link, 'Data::Riak::Link');
 try {
     $riak->resolve_link( $link );
 } catch {
-    is($_->value, "not found\n", "Calling for a value that doesn't exist returns not found");
-    is($_->code, "404", "Calling for a value that doesn't exist returns 404");
+    isa_ok $_, 'Data::Riak::Exception::ObjectNotFound';
 };
 
 $bucket->add('foo', 'bar');
