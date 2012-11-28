@@ -11,12 +11,10 @@ use LWP::ConnCache;
 use HTTP::Headers;
 use HTTP::Response;
 use HTTP::Request;
-use JSON 'decode_json';
 
 use Data::Riak::HTTP::Request;
 use Data::Riak::HTTP::Response;
-
-use Data::Riak::TransportException;
+use Data::Riak::HTTP::ExceptionHandler::Default;
 
 use namespace::autoclean;
 
@@ -112,6 +110,16 @@ has client_id => (
     default => sub { sprintf '%s/%s', __PACKAGE__, our $VERSION // 'git' },
 );
 
+has exception_handler => (
+    is      => 'ro',
+    isa     => 'Data::Riak::HTTP::ExceptionHandler',
+    builder => '_build_exception_handler',
+);
+
+sub _build_exception_handler {
+    Data::Riak::HTTP::ExceptionHandler::Default->new;
+}
+
 =method base_uri
 
 The base URI for the Riak server.
@@ -140,23 +148,9 @@ sub send {
     my $http_request = $self->create_request($request);
     my $http_response = $self->_send($http_request);
 
-    if ($request->does('Data::Riak::Request::WithHTTPExceptionHandling')) {
-        my $expt_class = $request->exception_class_for_http_status(
-            $http_response->code,
-        );
-
-        $expt_class->throw({
-            request            => $request,
-            transport_request  => $http_request,
-            transport_response => $http_response,
-        }) if $expt_class;
-    }
-
-    Data::Riak::TransportException->throw({
-        message  => $http_response->http_response->message, # FIXME
-        request  => $http_request,
-        response => $http_response,
-    }) if $http_response->is_error;
+    $self->exception_handler->try_handle_exception(
+        $request, $http_request, $http_response,
+    );
 
     return $http_response;
 }

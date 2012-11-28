@@ -69,8 +69,7 @@ sub remove_test_bucket {
             $keys = $bucket->list_keys;
         }
     } catch {
-        is($_->value, "not found\n", "Bucket is now empty");
-        is($_->code, "404", "Calling list_keys on an empty bucket gives a 404");
+        isa_ok $_, 'Data::Riak::Exception';
     };
 }
 

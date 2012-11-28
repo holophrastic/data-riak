@@ -7,19 +7,19 @@ extends 'Throwable::Error';
 
 has request => (
     is       => 'ro',
-    isa      => 'Data::Riak::Request',
+    does     => 'Data::Riak::Request',
     required => 1,
 );
 
 has transport_request => (
     is       => 'ro',
-    isa      => 'Data::Riak::Transport::Request',
+    does     => 'Data::Riak::Transport::Request',
     required => 1,
 );
 
 has transport_response => (
     is       => 'ro',
-    isa      => 'Data::Riak::Transport::Response',
+    does     => 'Data::Riak::Transport::Response',
     required => 1,
 );
 
