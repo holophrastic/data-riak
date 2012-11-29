@@ -111,12 +111,14 @@ sub send_request {
     my $request = $self->_create_request($request_data);
     my $response = $self->transport->send($request);
 
-    my @parts = @{ $response->parts };
+    my @results = $response->create_results($self, $request);
+    return unless @results;
 
-    return unless @parts;
-    return Data::Riak::ResultSet->new(
-        results => [$response->create_results($self, $request)],
-    );
+    if (@results == 1 && $results[0]->does('Data::Riak::Result::Single')) {
+        return $results[0];
+    }
+
+    return Data::Riak::ResultSet->new({ results => \@results });
 }
 
 =method ping
