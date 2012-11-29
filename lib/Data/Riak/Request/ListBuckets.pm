@@ -11,6 +11,7 @@ sub as_http_request_args {
         method => 'GET',
         uri    => '/buckets',
         query  => { buckets => 'true' },
+        accept => 'application/json',
     };
 }
 
