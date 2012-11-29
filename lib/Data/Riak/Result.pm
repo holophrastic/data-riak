@@ -1,19 +1,20 @@
 package Data::Riak::Result;
 
-use strict;
-use warnings;
-
 use Moose;
-
-use Data::Riak::Link;
-
-use URI;
-use HTTP::Headers::ActionPack 0.05;
+use MooseX::StrictConstructor;
 
 with 'Data::Riak::Role::HasRiak';
 
-has [qw(status_code etag content_type vector_clock last_modified)] => (
-    is => 'ro',
+has status_code => (
+    is       => 'ro',
+    isa      => 'Int',
+    required => 1,
+);
+
+has content_type => (
+    is       => 'ro',
+    isa      => 'HTTP::Headers::ActionPack::MediaType',
+    required => 1,
 );
 
 has value => (
