@@ -78,7 +78,8 @@ sub _build_request_classes {
         (map {
             ($_ => 'Data::Riak::Request::' . $_),
         } qw(MapReduce Ping GetBucketProps StoreObject GetObject
-             ListBucketKeys RemoveObject LinkWalk Status ListBuckets)),
+             ListBucketKeys RemoveObject LinkWalk Status ListBuckets
+             SetBucketProps)),
     }
 }
 

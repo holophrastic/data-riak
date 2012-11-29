@@ -304,10 +304,9 @@ sub indexing {
     };
 
     return $self->riak->send_request({
-        method => 'PUT',
-        content_type => 'application/json',
-        uri => $self->name,
-        data => encode_json($data)
+        type        => 'SetBucketProps',
+        bucket_name => $self->name,
+        props       => $data,
     });
 }
 
