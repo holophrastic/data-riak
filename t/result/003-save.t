@@ -37,11 +37,15 @@ is($obj->bucket_name, $bucket->name, '... the name of the bucket is as expected'
 is($obj->location, ($obj->riak->base_uri . 'buckets/' . $bucket->name . '/keys/foo'), '... got the right location of the object');
 is($obj->value, 'bar', '... the value is bar');
 
-$obj->value('baz');
-is($obj->value, 'baz', '... the content was changed');
+my $new_obj = $obj->clone(
+    value => 'baz',
+);
+is($obj->value, 'bar', '... the content was not changed');
+is($new_obj->value, 'baz', '... the clone has the new content');
+is($new_obj->key, 'foo', '... but still the same key');
 
 is(exception {
-    $obj->save;
+    $new_obj->save;
 }, undef, '... got no exception saving element in the bucket');
 
 my $obj2 = $bucket2->get('foo');

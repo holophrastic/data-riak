@@ -3,7 +3,7 @@ package Data::Riak::Result;
 use Moose;
 use MooseX::StrictConstructor;
 
-with 'Data::Riak::Role::HasRiak';
+with 'Data::Riak::Role::HasRiak', 'MooseX::Clone';
 
 has status_code => (
     is       => 'ro',
@@ -18,7 +18,7 @@ has content_type => (
 );
 
 has value => (
-    is  => 'rw', # awful. for ->save in WithLocation
+    is  => 'ro',
     isa => 'Str',
 );
 

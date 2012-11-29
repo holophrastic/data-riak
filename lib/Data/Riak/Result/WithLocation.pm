@@ -65,7 +65,7 @@ sub sync {
     return $new_result;
 }
 
-# if it's been changed locally, save those changes to the server
+# if it's been changed locally by cloning, save those changes to the server
 sub save {
     my $self = shift;
     return $self->bucket->add($self->key, $self->value, {
