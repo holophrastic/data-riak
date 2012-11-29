@@ -17,9 +17,9 @@ use namespace::autoclean;
 
 =head1 DESCRIPTION
 
-Data::Riak is a simple interface to a Riak server. It is not as complete as L<Net::Riak>,
-nor does it aim to be; instead, it attempts to make the simple operations very simple,
-while still allowing you to do complicated tasks.
+Data::Riak is a simple interface to a Riak server. It is not as complete as
+L<Net::Riak>, nor does it aim to be; instead, it attempts to make the simple
+operations very simple, while still allowing you to do complicated tasks.
 
 =head1 SYNOPSIS
 
@@ -46,17 +46,23 @@ while still allowing you to do complicated tasks.
     my $value = $foo->value;
 
     # The HTTP status code, 200 on a successful GET.
-    my $code = $foo->code;
+    my $code = $foo->status_code;
 
-    Most of the interesting methods are really in L<Data::Riak::Bucket>, so please read the documents there as well.
+Most of the interesting methods are really in L<Data::Riak::Bucket>, so please
+read the documents there as well.
+
+=attr transport
+
+A L<Data::Riak::Transport> to be used in order to communicate with
+Riak. Currently, the only existing transport is L<Data::Riak::HTTP>.
 
 =cut
 
 has transport => (
-    is => 'ro',
-    isa => 'Data::Riak::HTTP',
+    is       => 'ro',
+    does     => 'Data::Riak::Transport',
     required => 1,
-    handles => {
+    handles  => {
         'base_uri' => 'base_uri'
     }
 );
@@ -196,9 +202,10 @@ sub linkwalk {
 =head1 LINKWALKING
 
 One of Riak's notable features is the ability to easily "linkwalk", or traverse
-relationships between objects to return relevant resultsets. The most obvious use
-of this is "Show me all of the friends of people Bob is friends with", but it has
-great potential, and it's the one thing we tried to make really simple with Data::Riak.
+relationships between objects to return relevant resultsets. The most obvious
+use of this is "Show me all of the friends of people Bob is friends with", but
+it has great potential, and it's the one thing we tried to make really simple
+with Data::Riak.
 
     # Add bar to the bucket, and list foo as a buddy.
     $bucket->add('bar', 'value of bar', {
@@ -220,8 +227,11 @@ great potential, and it's the one thing we tried to make really simple with Data
     # Get everyone in my_bucket who foo thinks is not a buddy.
     $walk_results = $bucket->linkwalk('foo', [ [ 'not a buddy', 1 ] ]);
 
-    # Get everyone in my_bucket who baz thinks is a buddy of baz, get the people they list as not a buddy, and only return those.
-    $more_walk_results = $bucket->linkwalk('baz', [ [ 'buddy', 0 ], [ 'not a buddy', 1 ] ]);
+    # Get everyone in my_bucket who baz thinks is a buddy of baz, get the people
+    # they list as not a buddy, and only return those.
+    $more_walk_results = $bucket->linkwalk(
+      'baz', [ [ 'buddy', 0 ], [ 'not a buddy', 1 ] ],
+    );
 
     # You can also linkwalk outside of a bucket. The syntax changes, as such:
     $global_walk_results = $riak->linkwalk({
@@ -230,7 +240,9 @@ great potential, and it's the one thing we tried to make really simple with Data
         params => [ [ 'other_bucket', 'buddy', 1 ] ]
     });
 
-The bucket passed in on the riak object's linkwalk is the bucket the original target is in, and is used as a default if you only pass two options in the params lists.
+The bucket passed in on the riak object's linkwalk is the bucket the original
+target is in, and is used as a default if you only pass two options in the
+params lists.
 
 =cut
 
@@ -240,17 +252,21 @@ The bucket passed in on the riak object's linkwalk is the bucket the original ta
 
 Influenced heavily by L<Net::Riak>.
 
-I wrote the first pass of Data::Riak, but large sections were added/fixed/rewritten to not suck by Stevan Little C<< <stevan at cpan.org> >> and Cory Watson C<< <gphat at cpan.org> >>.
+I wrote the first pass of Data::Riak, but large sections were
+added/fixed/rewritten to not suck by Stevan Little C<< <stevan at cpan.org> >>
+and Cory Watson C<< <gphat at cpan.org> >>.
 
 =head1 TODO
 
-Docs, docs, and more docs. The individual modules have a lot of functionality that needs documented.
+Docs, docs, and more docs. The individual modules have a lot of functionality
+that needs documented.
 
 =head1 COPYRIGHT & LICENSE
 
 This software is copyright (c) 2012 by Infinity Interactive, Inc..
 
-This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under the same
+terms as the Perl 5 programming language system itself.
 
 
 =end :postlude
