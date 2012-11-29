@@ -10,6 +10,7 @@ sub as_http_request_args {
     return {
         method => 'GET',
         uri    => sprintf('buckets/%s/props', $self->bucket_name),
+        accept => 'application/json',
     };
 }
 
