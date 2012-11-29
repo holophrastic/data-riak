@@ -11,8 +11,6 @@ use Data::Riak::MapReduce::Phase::Link;
 use Data::Riak::MapReduce::Phase::Map;
 use Data::Riak::MapReduce::Phase::Reduce;
 
-use JSON::XS qw/encode_json/;
-
 use namespace::autoclean;
 
 with 'Data::Riak::Role::HasRiak';
