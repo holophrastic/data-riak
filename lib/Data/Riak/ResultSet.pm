@@ -6,8 +6,8 @@ use warnings;
 use Moose;
 
 has results => (
-    is => 'rw',
-    isa => 'ArrayRef[Data::Riak::Result]',
+    is       => 'ro',
+    isa      => 'ArrayRef[Data::Riak::Result]',
     required => 1
 );
 
