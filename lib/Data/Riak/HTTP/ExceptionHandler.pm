@@ -23,29 +23,35 @@ has fallback_handlers => (
 sub try_handle_exception {
     my ($self, $request, $http_request, $http_response) = @_;
 
-    $self->try_handle_request_specific_exception(
+    my $handled = $self->try_handle_request_specific_exception(
         $request, $http_request, $http_response,
     ) if $self->honour_request_specific_exceptions;
 
     $self->try_handle_exception_fallback(
         $request, $http_request, $http_response,
-    );
+    ) unless $handled;
 }
 
 sub try_handle_request_specific_exception {
     my ($self, $request, $http_request, $http_response) = @_;
 
     return unless $request->does('Data::Riak::Request::WithHTTPExceptionHandling');
+    return unless $request->has_exception_class_for_http_status(
+        $http_response->code,
+    );
 
     my $expt_class = $request->exception_class_for_http_status(
         $http_response->code,
     );
 
+    # this status code isn't fatal for this request
+    return 1 if !defined $expt_class;
+
     $expt_class->throw({
         request            => $request,
         transport_request  => $http_request,
         transport_response => $http_response,
-    }) if $expt_class;
+    });
 }
 
 sub try_handle_exception_fallback {
