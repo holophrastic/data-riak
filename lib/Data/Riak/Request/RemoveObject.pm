@@ -1,6 +1,7 @@
 package Data::Riak::Request::RemoveObject;
 
 use Moose;
+use Data::Riak::Result::VClock;
 use namespace::autoclean;
 
 sub as_http_request_args {
@@ -22,7 +23,7 @@ with 'Data::Riak::Request::WithObject',
      'Data::Riak::Request::WithHTTPExceptionHandling';
 
 has '+result_class' => (
-    default => Data::Riak::Result::,
+    default => Data::Riak::Result::VClock::,
 );
 
 __PACKAGE__->meta->make_immutable;
