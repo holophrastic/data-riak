@@ -19,8 +19,8 @@ The C<pack> method is required to be implemented by consumers of this role.
 =cut
 
 has keep => (
-    is => 'rw',
-    isa => 'Bool',
+    is        => 'ro',
+    isa       => 'Bool',
     predicate => 'has_keep',
 );
 

@@ -27,14 +27,14 @@ The name of the bucket from which links should be followed.
 =cut
 
 has bucket => (
-    is => 'rw',
-    isa => 'Str',
+    is        => 'ro',
+    isa       => 'Str',
     predicate => 'has_bucket'
 );
 
 has phase => (
-    is => 'ro',
-    isa => 'Str',
+    is      => 'ro',
+    isa     => 'Str',
     default => 'link'
 );
 
@@ -45,8 +45,8 @@ The name of the tag of links that should be followed
 =cut
 
 has tag => (
-    is => 'rw',
-    isa => 'Str',
+    is        => 'ro',
+    isa       => 'Str',
     predicate => 'has_tag'
 );
 
