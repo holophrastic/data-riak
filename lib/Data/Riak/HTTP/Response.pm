@@ -74,7 +74,8 @@ sub _create_result {
         status_code   => $self->http_response->code, # FIXME: http specific
         value         => $http_message->content,
         (map {
-            ($_ => scalar $http_message->header($header_values{$_}))
+            my $v = $http_message->header($header_values{$_});
+            defined $v ? ($_ => $v) : ();
         } keys %header_values),
     );
 
