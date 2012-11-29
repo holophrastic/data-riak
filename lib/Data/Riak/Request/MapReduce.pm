@@ -2,6 +2,8 @@ package Data::Riak::Request::MapReduce;
 
 use Moose;
 use Data::Riak::Result::Object;
+use Data::Riak::Exception::FunctionFailed;
+use Data::Riak::Exception::Timeout;
 use JSON 'encode_json';
 use namespace::autoclean;
 
@@ -29,7 +31,15 @@ sub as_http_request_args {
     };
 }
 
-with 'Data::Riak::Request';
+sub _build_http_exception_classes {
+    return {
+        500 => Data::Riak::Exception::FunctionFailed::,
+        503 => Data::Riak::Exception::Timeout::,
+    };
+}
+
+with 'Data::Riak::Request',
+     'Data::Riak::Request::WithHTTPExceptionHandling';
 
 __PACKAGE__->meta->make_immutable;
 
