@@ -130,11 +130,7 @@ yes.
 
 sub ping {
     my ($self) = @_;
-
-    my $response = $self->send_request({ type => 'Ping' });
-    return 0 unless($response->first->status_code eq '200');
-    return 1;
-
+    return $self->send_request({ type => 'Ping' })->status_code == 200 ? 1 : 0;
 }
 
 =method status
