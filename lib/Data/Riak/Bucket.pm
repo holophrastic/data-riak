@@ -290,6 +290,16 @@ sub props {
     })->json_value->{props};
 }
 
+sub set_props {
+    my ($self, $props) = @_;
+
+    return $self->riak->send_request({
+        type        => 'SetBucketProps',
+        bucket_name => $self->name,
+        props       => $props,
+    });
+}
+
 sub indexing {
     my ($self, $enable) = @_;
 
@@ -303,11 +313,7 @@ sub indexing {
         $data->{props}->{precommit}->{fun} = undef;
     };
 
-    return $self->riak->send_request({
-        type        => 'SetBucketProps',
-        bucket_name => $self->name,
-        props       => $data,
-    });
+    $self->set_props($data);
 }
 
 =method create_alias ($opts)
