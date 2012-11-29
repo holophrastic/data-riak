@@ -2,6 +2,8 @@ package Data::Riak::Request::StoreObject;
 
 use Moose;
 use Data::Riak::Result::SingleObject;
+use Data::Riak::Exception::ConditionFailed;
+use Data::Riak::Exception::MultipleSiblingsAvailable;
 use namespace::autoclean;
 
 has value => (
@@ -51,7 +53,15 @@ sub as_http_request_args {
     };
 }
 
-with 'Data::Riak::Request::WithObject';
+sub _build_http_exception_classes {
+    return {
+        300 => Data::Riak::Exception::MultipleSiblingsAvailable::,
+        412 => Data::Riak::Exception::ConditionFailed::,
+    };
+}
+
+with 'Data::Riak::Request::WithObject',
+     'Data::Riak::Request::WithHTTPExceptionHandling';
 
 has '+result_class' => (
     default => Data::Riak::Result::SingleObject::,
