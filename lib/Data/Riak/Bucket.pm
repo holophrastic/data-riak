@@ -95,7 +95,7 @@ sub add {
     # see http://wiki.basho.com/HTTP-Store-Object.html
     # - SL
 
-    my $resultset = $self->riak->send_request({
+    return $self->riak->send_request({
         type        => 'StoreObject',
         bucket_name => $self->name,
         key         => $key,
@@ -107,9 +107,6 @@ sub add {
         (exists $opts->{indexes}
              ? (indexes => $opts->{indexes}) : ()),
     });
-
-    return $resultset->first if $resultset;
-    return;
 }
 
 =method remove ($key, $opts)
@@ -160,7 +157,7 @@ sub get {
         (exists $opts->{'query'}
             ? (query => $opts->{'query'})
             : ()),
-    })->first;
+    });
 }
 
 =method list_keys

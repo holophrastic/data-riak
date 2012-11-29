@@ -1,7 +1,7 @@
 package Data::Riak::Request::GetObject;
 
 use Moose;
-use Data::Riak::Result::Object;
+use Data::Riak::Result::SingleObject;
 use Data::Riak::Exception::ObjectNotFound;
 use Data::Riak::Exception::MultipleSiblingsAvailable;
 use namespace::autoclean;
@@ -26,7 +26,7 @@ with 'Data::Riak::Request::WithObject',
      'Data::Riak::Request::WithHTTPExceptionHandling';
 
 has '+result_class' => (
-    default => Data::Riak::Result::Object::,
+    default => Data::Riak::Result::SingleObject::,
 );
 
 __PACKAGE__->meta->make_immutable;

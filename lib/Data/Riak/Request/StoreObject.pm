@@ -1,6 +1,7 @@
 package Data::Riak::Request::StoreObject;
 
 use Moose;
+use Data::Riak::Result::SingleObject;
 use namespace::autoclean;
 
 has value => (
@@ -53,7 +54,7 @@ sub as_http_request_args {
 with 'Data::Riak::Request::WithObject';
 
 has '+result_class' => (
-    default => Data::Riak::Result::Object::,
+    default => Data::Riak::Result::SingleObject::,
 );
 
 __PACKAGE__->meta->make_immutable;
