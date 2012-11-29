@@ -124,9 +124,6 @@ sub remove {
         type        => 'RemoveObject',
         bucket_name => $self->name,
         key         => $key,
-        (exists $opts->{'query'}
-            ? (query => $opts->{'query'})
-            : ()),
     });
 }
 
@@ -151,12 +148,6 @@ sub get {
         type        => 'GetObject',
         bucket_name => $self->name,
         key         => $key,
-        (exists $opts->{'accept'}
-            ? (accept => $opts->{'accept'})
-            : ()),
-        (exists $opts->{'query'}
-            ? (query => $opts->{'query'})
-            : ()),
     });
 }
 
