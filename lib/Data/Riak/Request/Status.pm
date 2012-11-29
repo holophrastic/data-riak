@@ -10,6 +10,7 @@ sub as_http_request_args {
     return {
         method => 'GET',
         uri    => 'stats',
+        accept => 'application/json',
     };
 }
 
