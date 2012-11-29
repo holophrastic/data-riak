@@ -30,7 +30,14 @@ sub as_http_request_args {
     };
 }
 
-with 'Data::Riak::Request::WithObject';
+sub _build_http_exception_classes {
+    return {
+        404 => Data::Riak::Exception::ObjectNotFound::,
+    };
+}
+
+with 'Data::Riak::Request::WithObject',
+     'Data::Riak::Request::WithHTTPExceptionHandling';
 
 has '+result_class' => (
     default => Data::Riak::Result::Object::,
