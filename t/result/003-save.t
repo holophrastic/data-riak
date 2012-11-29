@@ -37,9 +37,7 @@ is($obj->bucket_name, $bucket->name, '... the name of the bucket is as expected'
 is($obj->location, ($obj->riak->base_uri . 'buckets/' . $bucket->name . '/keys/foo'), '... got the right location of the object');
 is($obj->value, 'bar', '... the value is bar');
 
-my $new_obj = $obj->clone(
-    value => 'baz',
-);
+my $new_obj = $obj->value('baz');
 is($obj->value, 'bar', '... the content was not changed');
 is($new_obj->value, 'baz', '... the clone has the new content');
 is($new_obj->key, 'foo', '... but still the same key');

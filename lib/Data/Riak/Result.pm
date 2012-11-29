@@ -17,10 +17,17 @@ has content_type => (
     required => 1,
 );
 
-has value => (
-    is  => 'ro',
-    isa => 'Str',
+has _value => (
+    is       => 'ro',
+    isa      => 'Str',
+    init_arg => 'value',
 );
+
+sub value {
+    my $self = shift;
+    return $self->_value unless @_;
+    return $self->clone(value => shift);
+}
 
 __PACKAGE__->meta->make_immutable;
 no Moose;
