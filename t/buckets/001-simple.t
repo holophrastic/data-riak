@@ -62,6 +62,9 @@ try {
         "Calling for a value that doesn't exist returns 404";
 };
 
+is exception { $bucket->remove('foo') }, undef,
+    'removing a non-existent key is non-fatal';
+
 $bucket->add('bar', 'value of bar', { links => [Data::Riak::Link->new( bucket => $bucket_name, riaktag => 'buddy', key =>'foo' )] });
 $bucket->add('baz', 'value of baz', { links => [$bucket->create_link( riaktag => 'buddy', key =>'foo' )] });
 $bucket->add('foo', 'value of foo', { links => [$bucket->create_link({ riaktag => 'not a buddy', key =>'bar' }), $bucket->create_link({ riaktag => 'not a buddy', key =>'baz' })] });
