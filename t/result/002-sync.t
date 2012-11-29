@@ -40,7 +40,7 @@ is($obj->value, 'bar', '... the value is bar');
 $bucket->add('foo', 'baz');
 
 is(exception {
-    $obj->sync;
+    $obj = $obj->sync;
 }, undef, '... got no exception syncing an item');
 
 is($obj->key, 'foo', '... the name of the item is foo');

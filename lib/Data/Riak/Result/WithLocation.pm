@@ -48,15 +48,29 @@ after BUILD => sub {
     $self->key;
 };
 
-# if it's been changed on the server, discard those changes and update the object
+# if it's been changed on the server, discard those changes and update the
+# object
+my %warned_for;
 sub sync {
-    $_[0] = $_[0]->bucket->get($_[0]->key)
+    my ($self) = @_;
+
+    my $new_result = $self->bucket->get( $self->key );
+    if (!defined wantarray) {
+        my $caller = caller;
+        warn "${caller} is using the deprecated ->sync in void context"
+            unless $warned_for{$caller};
+        $_[0] = $new_result;
+    }
+
+    return $new_result;
 }
 
 # if it's been changed locally, save those changes to the server
 sub save {
     my $self = shift;
-    return $self->bucket->add($self->key, $self->value, { links => $self->links });
+    return $self->bucket->add($self->key, $self->value, {
+        links => $self->links,
+    });
 }
 
 sub linkwalk {
