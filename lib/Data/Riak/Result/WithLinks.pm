@@ -4,8 +4,10 @@ use Moose::Role;
 use Data::Riak::Link;
 use namespace::autoclean;
 
+requires 'clone';
+
 has links => (
-    is => 'rw',
+    is => 'ro',
     isa => 'ArrayRef[Data::Riak::Link]',
 );
 
@@ -22,10 +24,7 @@ sub create_link {
 sub add_link {
     my ($self, $link) = @_;
     return undef unless $link;
-    my $links = $self->links;
-    push @{$links}, $link;
-    $self->links($links);
-    return $self;
+    return $self->clone(links => [@{ $self->links }, $link]);
 }
 
 sub remove_link {
@@ -41,8 +40,7 @@ sub remove_link {
         next if($riaktag && $link->has_riaktag && ($riaktag eq $link->riaktag));
         push @{$new_links}, $link;
     }
-    $self->links($new_links);
-    return $self;
+    return $self->clone(links => $new_links);
 }
 
 1;

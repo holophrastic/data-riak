@@ -9,8 +9,6 @@ use Moose;
 use Data::Riak::Link;
 use Data::Riak::Util::MapCount;
 use Data::Riak::Util::ReduceCount;
-use Data::Riak::Result;
-use Data::Riak::Result::Object;
 
 use Data::Riak::MapReduce;
 use Data::Riak::MapReduce::Phase::Reduce;

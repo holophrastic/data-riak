@@ -6,7 +6,6 @@ use warnings;
 # ABSTRACT: A map/reduce query
 
 use Moose;
-use Data::Riak::Result;
 use Data::Riak::MapReduce::Phase::Link;
 use Data::Riak::MapReduce::Phase::Map;
 use Data::Riak::MapReduce::Phase::Reduce;
