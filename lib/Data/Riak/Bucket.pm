@@ -172,12 +172,10 @@ doing.
 sub list_keys {
     my $self = shift;
 
-    my $result = $self->riak->send_request({
+    return $self->riak->send_request({
         type        => 'ListBucketKeys',
         bucket_name => $self->name,
-    })->first;
-
-    return decode_json( $result->value )->{'keys'};
+    })->json_value->{keys};
 }
 
 =method count
@@ -286,12 +284,10 @@ sub pretty_search_index {
 sub props {
     my $self = shift;
 
-    my $result = $self->riak->send_request({
+    return $self->riak->send_request({
         type        => 'GetBucketProps',
         bucket_name => $self->name,
-    })->first;
-
-    return decode_json( $result->value )->{'props'};
+    })->json_value->{props};
 }
 
 sub indexing {

@@ -1,12 +1,8 @@
 package Data::Riak;
 # ABSTRACT: An interface to a Riak server.
 
-use strict;
-use warnings;
-
 use Moose;
 
-use JSON::XS qw/decode_json/;
 use Class::Load 'load_class';
 
 use Data::Riak::Result;
@@ -144,8 +140,7 @@ information could not be retrieved.
 
 sub status {
     my ($self) = @_;
-    my $response = $self->send_request({ type => 'Status' });
-    return decode_json $response->first->value;
+    return $self->send_request({ type => 'Status' })->json_value;
 }
 
 =method _buckets
@@ -158,11 +153,9 @@ and convenience.
 
 sub _buckets {
     my $self = shift;
-    return decode_json(
-        $self->send_request({
-            type => 'ListBuckets',
-        })->first->value
-    )->{buckets};
+    return $self->send_request({
+        type => 'ListBuckets',
+    })->json_value->{buckets};
 }
 
 =method bucket ($name)

@@ -1,6 +1,7 @@
 package Data::Riak::Request::GetBucketProps;
 
 use Moose;
+use Data::Riak::Result::SingleJSONValue;
 use namespace::autoclean;
 
 sub as_http_request_args {
@@ -13,6 +14,10 @@ sub as_http_request_args {
 }
 
 with 'Data::Riak::Request::WithBucket';
+
+has '+result_class' => (
+    default => Data::Riak::Result::SingleJSONValue::,
+);
 
 __PACKAGE__->meta->make_immutable;
 
