@@ -8,7 +8,7 @@ with 'Data::Riak::Request';
 has http_exception_classes => (
     traits  => ['Hash'],
     is      => 'ro',
-    isa     => 'HashRef[Str|Undef]',
+    isa     => 'HashRef[ClassName|Undef]',
     builder => '_build_http_exception_classes',
     handles => {
         has_exception_class_for_http_status => 'exists',
