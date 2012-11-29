@@ -291,22 +291,6 @@ sub set_props {
     });
 }
 
-sub indexing {
-    my ($self, $enable) = @_;
-
-    my $data;
-
-    if($enable) {
-        $data->{props}->{precommit}->{mod} = 'riak_search_kv_hook';
-        $data->{props}->{precommit}->{fun} = 'precommit';
-    } else {
-        $data->{props}->{precommit}->{mod} = undef;
-        $data->{props}->{precommit}->{fun} = undef;
-    };
-
-    $self->set_props($data);
-}
-
 =method create_alias ($opts)
 
 Creates an alias for a record using links. Helpful if your primary ID is a UUID or
