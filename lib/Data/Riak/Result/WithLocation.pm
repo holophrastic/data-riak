@@ -67,10 +67,14 @@ sub sync {
 
 # if it's been changed locally by cloning, save those changes to the server
 sub save {
-    my $self = shift;
-    return $self->bucket->add($self->key, $self->value, {
-        links => $self->links,
-    });
+    my ($self, %opts) = @_;
+    return $self->bucket->add(
+        $self->key, (exists $opts{new_value} ? $opts{new_value} : $self->value),
+        {
+            links => (exists $opts{new_links} ? $opts{new_links} : $self->links),
+            return_body => 1,
+        },
+    );
 }
 
 sub linkwalk {

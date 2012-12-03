@@ -3,7 +3,7 @@ package Data::Riak::Result;
 use Moose;
 use MooseX::StrictConstructor;
 
-with 'Data::Riak::Role::HasRiak', 'MooseX::Clone';
+with 'Data::Riak::Role::HasRiak';
 
 has status_code => (
     is       => 'ro',
@@ -17,17 +17,10 @@ has content_type => (
     required => 1,
 );
 
-has _value => (
-    is       => 'ro',
-    isa      => 'Str',
-    init_arg => 'value',
+has value => (
+    is  => 'ro',
+    isa => 'Str',
 );
-
-sub value {
-    my $self = shift;
-    return $self->_value unless @_;
-    return $self->clone(value => shift);
-}
 
 __PACKAGE__->meta->make_immutable;
 no Moose;

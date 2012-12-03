@@ -4,10 +4,10 @@ use Moose::Role;
 use Data::Riak::Link;
 use namespace::autoclean;
 
-requires 'clone';
+with 'MooseX::Clone';
 
 has links => (
-    is => 'ro',
+    is  => 'ro',
     isa => 'ArrayRef[Data::Riak::Link]',
 );
 
