@@ -13,7 +13,14 @@ sub as_http_request_args {
     };
 }
 
-with 'Data::Riak::Request';
+sub _build_http_exception_classes {
+    return {
+        500 => undef,
+    };
+}
+
+with 'Data::Riak::Request',
+     'Data::Riak::Request::WithHTTPExceptionHandling';
 
 has '+result_class' => (
     default => Data::Riak::Result::SingleValue::,
