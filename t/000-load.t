@@ -10,4 +10,7 @@ BEGIN {
 	use_ok('Data::Riak::HTTP');
 }
 
+use Test::Data::Riak;
+diag 'Testing against ' . riak_transport->transport->base_uri;
+
 done_testing;
