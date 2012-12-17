@@ -12,7 +12,7 @@ BEGIN {
     skip_unless_riak;
 }
 
-my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
+my $riak = riak_transport;
 ok($riak->ping, 'Riak server to test against');
 
 done_testing;

@@ -36,6 +36,7 @@ sub _build_exports {
     my $transport = $args->{transport};
 
     return {
+        riak_transport              => sub { $transport },
         remove_test_bucket          => \&remove_test_bucket,
         create_test_bucket_name     => \&create_test_bucket_name,
         skip_unless_riak            => sub { skip_unless_riak($transport, @_) },
