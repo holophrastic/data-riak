@@ -13,13 +13,6 @@ use Data::Riak;
 use Data::Riak::HTTP;
 use namespace::clean;
 
-my @exports = qw[
-    skip_unless_riak
-    skip_unless_leveldb_backend
-    remove_test_bucket
-    create_test_bucket_name
-];
-
 sub _env_key {
     my ($key, $https) = @_;
     sprintf 'TEST_DATA_RIAK_HTTP%s_%s', ($https ? 'S' : ''), $key;
