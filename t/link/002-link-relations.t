@@ -16,7 +16,7 @@ BEGIN {
 
 use Data::Riak;
 
-my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
+my $riak = riak_transport;
 my $bucket_name = create_test_bucket_name;
 my $bucket = $riak->bucket( $bucket_name );
 

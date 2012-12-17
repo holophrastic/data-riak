@@ -20,12 +20,41 @@ my @exports = qw[
     create_test_bucket_name
 ];
 
-sub _build_transport {
-    my ($protocol) = @_;
+sub _env_key {
+    my ($key, $https) = @_;
+    sprintf 'TEST_DATA_RIAK_HTTP%s_%s', ($https ? 'S' : ''), $key;
+}
 
+my %defaults = (
+    host    => '127.0.0.1',
+    port    => 8098,
+    timeout => 15,
+);
+
+for my $opt (keys %defaults) {
+    my $code = sub {
+        my ($https) = @_;
+        my $env_key = _env_key uc $opt, $https;
+        exists $ENV{$env_key} ? $ENV{$env_key} : $defaults{$opt}
+    };
+
+    no strict 'refs';
+    *{"_default_${opt}"} = $code;
+}
+
+sub _build_transport {
+    my ($args) = @_;
+
+    my $https = $args->{https};
     Data::Riak->new({
         transport => Data::Riak::HTTP->new({
-            protocol  => $protocol,
+            protocol => ($https ? 'https' : 'http'),
+            timeout  => (exists $args->{timeout}
+                             ? $args->{timeout} : _default_timeout($https)),
+            host     => (exists $args->{host}
+                             ? $args->{host} : _default_host($https)),
+            port     => (exists $args->{port}
+                             ? $args->{port} : _default_port($https)),
         }),
     });
 }
@@ -33,7 +62,7 @@ sub _build_transport {
 sub _build_exports {
     my ($self, $meth, $args, $defaults) = @_;
 
-    my $transport = $args->{transport};
+    my $transport = _build_transport($args);
 
     return {
         riak_transport              => sub { $transport },
@@ -51,13 +80,9 @@ my $import = Sub::Exporter::build_exporter({
     into_level => 1,
 });
 
-use List::AllUtils 'any';
 sub import {
-    my ($class, @opts) = @_;
-    my $https = any { $_ eq '-https' } @opts;
-    $import->($class, -default => {
-        transport => _build_transport($https ? 'https' : 'http'),
-    });
+    my ($class, $args) = @_;
+    $import->($class, -default => $args);
 }
 
 sub create_test_bucket_name {

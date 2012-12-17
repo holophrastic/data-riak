@@ -14,7 +14,7 @@ skip_unless_riak;
 
 my $bucket = Data::Riak::Bucket->new({
     name => create_test_bucket_name,
-    riak => Data::Riak->new(transport => Data::Riak::HTTP->new)
+    riak => riak_transport,
 });
 
 is(exception {

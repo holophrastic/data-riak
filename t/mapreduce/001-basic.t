@@ -11,7 +11,7 @@ use Data::Riak::Bucket;
 
 skip_unless_riak;
 
-my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
+my $riak = riak_transport;
 
 # Implement the example from the Riak docs.
 # http://wiki.basho.com/MapReduce.html#MapReduce-via-the-HTTP-API

@@ -14,7 +14,7 @@ BEGIN {
     skip_unless_leveldb_backend;
 }
 
-my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
+my $riak = riak_transport;
 
 my $bucket_name = create_test_bucket_name;
 my $bucket = Data::Riak::Bucket->new({

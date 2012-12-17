@@ -14,7 +14,7 @@ use Data::Riak::Bucket;
 
 skip_unless_riak;
 
-my $riak = Data::Riak->new(transport => Data::Riak::HTTP->new);
+my $riak = riak_transport;
 my $bucket_name = create_test_bucket_name;
 
 my $bucket = Data::Riak::Bucket->new({
