@@ -21,8 +21,12 @@ my @exports = qw[
 ];
 
 sub _build_transport {
+    my ($protocol) = @_;
+
     Data::Riak->new({
-        transport => Data::Riak::HTTP->new,
+        transport => Data::Riak::HTTP->new({
+            protocol  => $protocol,
+        }),
     });
 }
 
@@ -49,8 +53,9 @@ my $import = Sub::Exporter::build_exporter({
 use List::AllUtils 'any';
 sub import {
     my ($class, @opts) = @_;
+    my $https = any { $_ eq '-https' } @opts;
     $import->($class, -default => {
-        transport => _build_transport,
+        transport => _build_transport($https ? 'https' : 'http'),
     });
 }
 
