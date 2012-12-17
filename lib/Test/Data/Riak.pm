@@ -20,10 +20,39 @@ my @exports = qw[
     create_test_bucket_name
 ];
 
-Sub::Exporter::setup_exporter({
-    exports => \@exports,
-    groups  => { default => \@exports }
+sub _build_transport {
+    Data::Riak->new({
+        transport => Data::Riak::HTTP->new,
+    });
+}
+
+sub _build_exports {
+    my ($self, $meth, $args, $defaults) = @_;
+
+    my $transport = $args->{transport};
+
+    return {
+        remove_test_bucket          => \&remove_test_bucket,
+        create_test_bucket_name     => \&create_test_bucket_name,
+        skip_unless_riak            => sub { skip_unless_riak($transport, @_) },
+        skip_unless_leveldb_backend => sub {
+            skip_unless_leveldb_backend($transport, @_)
+        },
+    };
+}
+
+my $import = Sub::Exporter::build_exporter({
+    groups     => { default => \&_build_exports },
+    into_level => 1,
 });
+
+use List::AllUtils 'any';
+sub import {
+    my ($class, @opts) = @_;
+    $import->($class, -default => {
+        transport => _build_transport,
+    });
+}
 
 sub create_test_bucket_name {
 	my $prefix = shift || 'data-riak-test';
@@ -31,9 +60,9 @@ sub create_test_bucket_name {
 }
 
 sub skip_unless_riak {
-    my $up = Data::Riak->new({
-        transport => Data::Riak::HTTP->new,
-    })->ping;
+    my ($transport) = @_;
+
+    my $up = $transport->ping;
     unless($up) {
         plan skip_all => 'Riak did not answer, skipping tests'
     };
@@ -41,10 +70,10 @@ sub skip_unless_riak {
 }
 
 sub skip_unless_leveldb_backend {
+    my ($transport) = @_;
+
     my $status = try {
-        Data::Riak->new({
-            transport => Data::Riak::HTTP->new,
-        })->status;
+        $transport->status;
     }
     catch {
         warn $_;
