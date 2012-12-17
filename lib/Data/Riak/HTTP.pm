@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Moose;
+use Carp 'cluck';
 
 use LWP::UserAgent;
 use LWP::ConnCache;
@@ -27,13 +28,27 @@ DATA_RIAK_HTTP_HOST, and defaults to 127.0.0.1.
 
 =cut
 
-has host => (
-    is => 'ro',
-    isa => 'Str',
-    default => sub {
-        $ENV{'DATA_RIAK_HTTP_HOST'} || '127.0.0.1';
-    }
-);
+{
+    my ($warned_host_env, $warned_host_default);
+
+    has host => (
+        is      => 'ro',
+        isa     => 'Str',
+        default => sub {
+            if (exists $ENV{DATA_RIAK_HTTP_HOST}) {
+                cluck 'Environment variable DATA_RIAK_HTTP_HOST is deprecated'
+                    unless $warned_host_env;
+
+                return $ENV{DATA_RIAK_HTTP_HOST};
+            }
+
+            cluck 'host defaulting to localhost is deprecated'
+                unless $warned_host_default;
+
+            return '127.0.0.1';
+        }
+    );
+}
 
 =attr port
 
@@ -42,13 +57,27 @@ variable DATA_RIAK_HTTP_PORT, and defaults to 8098.
 
 =cut
 
-has port => (
-    is => 'ro',
-    isa => 'Int',
-    default => sub {
-        $ENV{'DATA_RIAK_HTTP_PORT'} || '8098';
-    }
-);
+{
+    my ($warned_port_env, $warned_port_default);
+
+    has port => (
+        is      => 'ro',
+        isa     => 'Int',
+        default => sub {
+            if (exists $ENV{DATA_RIAK_HTTP_PORT}) {
+                cluck 'Environment variable DATA_RIAK_HTTP_PORT is deprecated'
+                    unless $warned_port_env;
+
+                return $ENV{DATA_RIAK_HTTP_PORT};
+            }
+
+            cluck 'port defaulting to 8098 is deprecated'
+                unless $warned_port_default;
+
+            return '8098';
+        }
+    );
+}
 
 =attr timeout
 
@@ -57,13 +86,24 @@ via the environment variable DATA_RIAK_HTTP_TIMEOUT, and defaults to 15.
 
 =cut
 
-has timeout => (
-    is => 'ro',
-    isa => 'Int',
-    default => sub {
-        $ENV{'DATA_RIAK_HTTP_TIMEOUT'} || '15';
-    }
-);
+{
+    my $warned_timeout_env;
+
+    has timeout => (
+        is => 'ro',
+        isa => 'Int',
+        default => sub {
+            if (exists $ENV{DATA_RIAK_HTTP_TIMEOUT}) {
+                cluck 'Environment variable DATA_RIAK_HTTP_TIMEOUT is deprecated'
+                    unless $warned_timeout_env;
+
+                return $ENV{DATA_RIAK_HTTP_TIMEOUT};
+            }
+
+            return '15';
+        }
+    );
+};
 
 =attr user_agent
 
