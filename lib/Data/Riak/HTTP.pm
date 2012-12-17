@@ -120,6 +120,12 @@ sub _build_exception_handler {
     Data::Riak::HTTP::ExceptionHandler::Default->new;
 }
 
+has protocol => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => 'http',
+);
+
 =attr base_uri
 
 The base URI for the Riak server.
@@ -135,7 +141,7 @@ has base_uri => (
 
 sub _build_base_uri {
     my $self = shift;
-    return sprintf('http://%s:%s/', $self->host, $self->port);
+    return sprintf('%s://%s:%s/', $self->protocol, $self->host, $self->port);
 }
 
 sub BUILD {
