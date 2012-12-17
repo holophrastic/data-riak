@@ -19,9 +19,10 @@ sub _env_key {
 }
 
 my %defaults = (
-    host    => '127.0.0.1',
-    port    => 8098,
-    timeout => 15,
+    host     => '127.0.0.1',
+    port     => 8098,
+    timeout  => 15,
+    protocol => 'http',
 );
 
 for my $opt (keys %defaults) {
@@ -38,10 +39,13 @@ for my $opt (keys %defaults) {
 sub _build_transport {
     my ($args) = @_;
 
-    my $https = $args->{https};
+    my $protocol = exists $args->{protocol}
+        ? $args->{protocol} : _default_protocol();
+
+    my $https = $protocol eq 'https';
     Data::Riak->new({
         transport => Data::Riak::HTTP->new({
-            protocol => ($https ? 'https' : 'http'),
+            protocol => $protocol,
             timeout  => (exists $args->{timeout}
                              ? $args->{timeout} : _default_timeout($https)),
             host     => (exists $args->{host}
