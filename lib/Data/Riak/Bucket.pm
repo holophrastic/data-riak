@@ -104,6 +104,12 @@ sub add {
              ? (content_type => $opts->{content_type}) : ()),
         (exists $opts->{indexes}
              ? (indexes => $opts->{indexes}) : ()),
+        (exists $opts->{vector_clock}
+             ? (vector_clock => $opts->{vector_clock}) : ()),
+        (exists $opts->{if_unmodified_since}
+             ? (if_unmodified_since => $opts->{if_unmodified_since}) : ()),
+        (exists $opts->{if_match}
+             ? (if_match => $opts->{if_match}) : ()),
     });
 }
 

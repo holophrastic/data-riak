@@ -50,6 +50,14 @@ sub as_http_request_args {
              ? (content_type => $self->content_type) : ()),
         ($self->has_indexes
              ? (indexes => $self->indexes) : ()),
+        headers => {
+            ($self->has_vector_clock
+                 ? ('x-riak-vclock' => $self->vector_clock) : ()),
+            ($self->has_if_unmodified_since
+                 ? ('if-unmodified-since' => $self->if_unmodified_since) : ()),
+            ($self->has_if_match
+                 ? ('if-match' => $self->if_match) : ()),
+        },
     };
 }
 

@@ -226,6 +226,7 @@ sub _send {
         'X-Riak-ClientId' => $self->client_id,
         ($request->method eq 'GET' ? ('Accept' => $request->accept) : ()),
         ($request->method eq 'POST' || $request->method eq 'PUT' ? ('Content-Type' => $request->content_type) : ()),
+        %{ $request->headers },
     );
 
     if(my $links = $request->links) {

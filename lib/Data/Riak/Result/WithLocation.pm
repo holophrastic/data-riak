@@ -72,7 +72,22 @@ sub save {
         $self->key, (exists $opts{new_value} ? $opts{new_value} : $self->value),
         {
             links => (exists $opts{new_links} ? $opts{new_links} : $self->links),
-            return_body => 1,
+            return_body  => 1,
+            vector_clock => $self->vector_clock,
+        },
+    );
+}
+
+sub save_unless_modified {
+    my ($self, %opts) = @_;
+    return $self->bucket->add(
+        $self->key, (exists $opts{new_value} ? $opts{new_value} : $self->value),
+        {
+            links => (exists $opts{new_links} ? $opts{new_links} : $self->links),
+            return_body  => 1,
+            vector_clock => $self->vector_clock,
+            if_unmodified_since => $self->last_modified . '',
+            if_match => $self->etag,
         },
     );
 }

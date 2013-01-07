@@ -59,6 +59,12 @@ has accept => (
     default => '*/*'
 );
 
+has headers => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    default => sub { +{} },
+);
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 
