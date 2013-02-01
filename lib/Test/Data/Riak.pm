@@ -84,7 +84,7 @@ sub import {
 
 sub create_test_bucket_name {
 	my $prefix = shift || 'data-riak-test';
-    return $prefix . '-' . md5_hex(scalar localtime)
+    return sprintf '%s-%s-%s', $prefix, $$, md5_hex(scalar localtime);
 }
 
 sub skip_unless_riak {
