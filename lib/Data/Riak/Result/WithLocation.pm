@@ -1,13 +1,26 @@
 package Data::Riak::Result::WithLocation;
+# ABSTRACT: Results with a Location
 
 use Moose::Role;
 use namespace::autoclean;
+
+=attr location
+
+The location URI as provided by Riak.
+
+=cut
 
 has location => (
     is       => 'ro',
     isa      => 'URI',
     required => 1,
 );
+
+=attr bucket
+
+The L<Data::Riak::Bucket> this result was retrieved from.
+
+=cut
 
 has bucket => (
     is      => 'ro',
@@ -19,6 +32,12 @@ has bucket => (
     }
 );
 
+=attr bucket_name
+
+The name of the bucket this result was retrieved from.
+
+=cut
+
 has bucket_name => (
     is      => 'ro',
     isa     => 'Str',
@@ -29,6 +48,12 @@ has bucket_name => (
         return $uri_parts[$#uri_parts - 2];
     }
 );
+
+=attr key
+
+The key this object is stored under within its bucket.
+
+=cut
 
 has key => (
     is      => 'ro',
@@ -48,6 +73,13 @@ after BUILD => sub {
     $self->key;
 };
 
+=method sync
+
+Re-fetches the object from its bucket and returns a new instance representing
+the latest version of the object in storage.
+
+=cut
+
 # if it's been changed on the server, discard those changes and update the
 # object
 my %warned_for;
@@ -65,6 +97,26 @@ sub sync {
     return $new_result;
 }
 
+=method save (%opts)
+
+  $obj->save(
+       new_value => $new_value,
+       new_links => $new_links,
+  );
+
+Saves the object back into its bucket, possibly with a different set of links or
+a different value.
+
+If the C<new_value> option isn't given, the current C<-E<gt>value> won't be
+altered.
+
+If the C<new_links> option isn't given, the current C<-E<gt>links> won't be
+altered.
+
+The updated object is returned.
+
+=cut
+
 # if it's been changed locally by cloning, save those changes to the server
 sub save {
     my ($self, %opts) = @_;
@@ -77,6 +129,19 @@ sub save {
         },
     );
 }
+
+=method save_unless_modified
+
+  $obj->save_unless_modified(
+       new_value => $new_value,
+       new_links => $new_links,
+  );
+
+Line L</save>, but will throw an exception when attempting to overwrite changes
+that have been made to this object within Riak since the current C<$obj> has
+been retrieved.
+
+=cut
 
 sub save_unless_modified {
     my ($self, %opts) = @_;
@@ -91,6 +156,12 @@ sub save_unless_modified {
         },
     );
 }
+
+=method linkwalk
+
+See L<Data::Riak/LINKWALKING>.
+
+=cut
 
 sub linkwalk {
     my ($self, $params) = @_;

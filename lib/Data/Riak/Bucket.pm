@@ -27,7 +27,7 @@ Data::Riak::Bucket is the primary interface that most people will use for Riak.
 Adding and removing keys and values, adding links, querying keys; all of those
 happen here.
 
-=head SYNOPSIS
+=head1 SYNOPSIS
 
     my $bucket = Data::Riak::Bucket->new({
         name => 'my_bucket',
