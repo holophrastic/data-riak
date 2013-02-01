@@ -123,6 +123,7 @@ sub remove_test_bucket {
         my $keys = $bucket->list_keys;
         while ( $keys && @$keys ) {
             sleep(1);
+            $bucket->remove_all;
             $keys = $bucket->list_keys;
         }
     } catch {
