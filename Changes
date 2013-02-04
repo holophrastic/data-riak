@@ -1,0 +1,27 @@
+1.2  2012-02-04
+
+  - This release contains a lot of new features and various refactorings that
+    make it not fully backward compatible with earlier versions of Data::Riak.
+    Sorry!
+
+  - Cache LWP connections
+  - Allow LWP to handle responses with very long header lines
+  - Add a status method
+  - Make tests pass on storage backends other than leveldb
+  - Improve error reporting
+  - Refactor the Transport API to be less tied to HTTP
+  - Refactor the Result API to provide only methods that make sense for a
+    given result
+  - Add an abstraction over the various Riak requests
+  - Stop retrieving bucket props in list_keys
+  - Add structured exceptions
+  - Add set_props to set bucket properties
+  - Remove Bucket->indexing as it never actually worked
+  - Handle vector clocks
+  - Deprecate $result->sync in void context
+  - Make ResultSets and Results immutable
+  - Add experimental HTTPS support
+  - Deprecate default host and port
+  - Add save_unless_modified allowing conflict handling
+  - Add a helper to wrap Riak exceptions into HTTP::Throwables
+  - Make it safe to run tests in parallel
