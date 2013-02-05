@@ -62,6 +62,7 @@ try {
         "Calling for a value that doesn't exist returns 404";
 };
 
+sleep 5;
 is exception { $bucket->remove('foo') }, undef,
     'removing a non-existent key is non-fatal';
 
