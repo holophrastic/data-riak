@@ -122,8 +122,8 @@ sub remove_test_bucket {
               if $ENV{HARNESS_IS_VERBOSE};
         my $keys = $bucket->list_keys;
         while ( $keys && @$keys ) {
-            sleep(1);
             $bucket->remove_all;
+            sleep(1);
             $keys = $bucket->list_keys;
         }
     } catch {
