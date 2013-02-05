@@ -4,7 +4,7 @@ Data::Riak - An interface to a Riak server.
 
 # VERSION
 
-version 1.2
+version 1.3
 
 # SYNOPSIS
 
