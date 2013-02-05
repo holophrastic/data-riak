@@ -1,3 +1,10 @@
+1.3  2013-02-05
+
+  - Fix flaking tests by giving Riak more time to finish processing the
+    requests sent
+  - Deal gracefully with RemoveObject requests returning results without
+    a VClock
+
 1.2  2013-02-04
 
   - This release contains a lot of new features and various refactorings that
