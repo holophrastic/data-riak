@@ -1,4 +1,4 @@
-1.2  2012-02-04
+1.2  2013-02-04
 
   - This release contains a lot of new features and various refactorings that
     make it not fully backward compatible with earlier versions of Data::Riak.
