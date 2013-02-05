@@ -56,30 +56,42 @@ sub _build_transport {
     });
 }
 
-sub _build_exports {
-    my ($self, $meth, $args, $defaults) = @_;
+sub _build_riak_transport {
+    my ($class, $name, $args, $col) = @_;
+    sub { $col->{transport} };
+}
 
-    my $transport = _build_transport($args);
+sub _build_skip_unless_riak {
+    my ($class, $name, $args, $col) = @_;
+    sub { skip_unless_riak($col->{transport}, @_) };
+}
 
-    return {
-        riak_transport              => sub { $transport },
-        remove_test_bucket          => \&remove_test_bucket,
-        create_test_bucket_name     => \&create_test_bucket_name,
-        skip_unless_riak            => sub { skip_unless_riak($transport, @_) },
-        skip_unless_leveldb_backend => sub {
-            skip_unless_leveldb_backend($transport, @_)
-        },
-    };
+sub _build_skip_unless_leveldb_backend {
+    my ($class, $name, $args, $col) = @_;
+    sub { skip_unless_leveldb_backend($col->{transport}, @_) };
 }
 
 my $import = Sub::Exporter::build_exporter({
-    groups     => { default => \&_build_exports },
+    exports    => [
+        riak_transport              => \&_build_riak_transport,
+        remove_test_bucket          => sub { \&remove_test_bucket },
+        create_test_bucket_name     => sub { \&create_test_bucket_name },
+        skip_unless_riak            => \&_build_skip_unless_riak,
+        skip_unless_leveldb_backend => \&_build_skip_unless_leveldb_backend,
+    ],
+    groups     => {
+        default => [qw(riak_transport remove_test_bucket create_test_bucket_name
+                       skip_unless_riak skip_unless_leveldb_backend)],
+    },
+    collectors => ['transport'],
     into_level => 1,
 });
 
 sub import {
-    my ($class, $args) = @_;
-    $import->($class, -default => $args);
+    my ($class, @args) = @_;
+    my $transport_args = ref $args[0] eq 'HASH' ? shift @args : {};
+    my $transport = _build_transport($transport_args);
+    $import->($class, transport => $transport, @args ? @args : '-default');
 }
 
 sub create_test_bucket_name {
