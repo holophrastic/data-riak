@@ -47,7 +47,7 @@ L<Data::Riak::Result::SingleValue>
 
 =item L<Data::Riak::Request::RemoveObject>
 
-L<Data::Riak::Result::VClock>
+L<Data::Riak::Result::MaybeVClock>
 
 =item L<Data::Riak::Request::SetBucketProps>
 

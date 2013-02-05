@@ -62,9 +62,13 @@ try {
         "Calling for a value that doesn't exist returns 404";
 };
 
-sleep 5;
-is exception { $bucket->remove('foo') }, undef,
-    'removing a non-existent key is non-fatal';
+{
+    sleep 5;
+    my $res;
+    is exception { $res = $bucket->remove('foo') }, undef,
+        'removing a non-existent key is non-fatal';
+    ok !$res->first->has_vector_clock, 'no vclock when removing missing keys';
+}
 
 $bucket->add('bar', 'value of bar', { links => [Data::Riak::Link->new( bucket => $bucket_name, riaktag => 'buddy', key =>'foo' )] });
 $bucket->add('baz', 'value of baz', { links => [$bucket->create_link( riaktag => 'buddy', key =>'foo' )] });
