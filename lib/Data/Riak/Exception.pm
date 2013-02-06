@@ -3,7 +3,7 @@ package Data::Riak::Exception;
 use Moose;
 use namespace::autoclean;
 
-extends 'Throwable::Error';
+extends 'Throwable::Error' => { -version => '0.200003' };
 
 has request => (
     is       => 'ro',
