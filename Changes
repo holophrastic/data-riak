@@ -1,3 +1,8 @@
+1.7  2013-02-06
+
+  - Bump dependency on Throwable::Error to fix warnings that showed
+    up when using older versions
+
 1.6  2013-02-06
 
   - Allow HTTP request header generation to depend on other request
