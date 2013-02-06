@@ -1,3 +1,7 @@
+1.5  2013-02-05
+
+  - Make HTTP request construction more pluggable.
+
 1.4  2013-02-05
 
   - Fix Test::Data::Riak's import method to allow both overriding of
