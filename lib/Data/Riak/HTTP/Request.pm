@@ -62,8 +62,10 @@ has accept => (
 has headers => (
     is      => 'ro',
     isa     => 'HashRef',
-    default => sub { +{} },
+    builder => '_build_headers',
 );
+
+sub _build_headers { +{} }
 
 __PACKAGE__->meta->make_immutable;
 no Moose;
