@@ -1,6 +1,11 @@
+1.6  2013-02-06
+
+  - Allow HTTP request header generation to depend on other request
+    instance attributes
+
 1.5  2013-02-05
 
-  - Make HTTP request construction more pluggable.
+  - Make HTTP request construction more pluggable
 
 1.4  2013-02-05
 
