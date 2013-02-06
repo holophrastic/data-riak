@@ -62,10 +62,16 @@ has accept => (
 has headers => (
     is      => 'ro',
     isa     => 'HashRef',
+    lazy    => 1,
     builder => '_build_headers',
 );
 
 sub _build_headers { +{} }
+
+sub BUILD {
+    my ($self) = @_;
+    $self->headers;
+}
 
 __PACKAGE__->meta->make_immutable;
 no Moose;
