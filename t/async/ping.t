@@ -15,7 +15,10 @@ my $t = Data::Riak::Async::HTTP->new(riak_transport_args);
 my $riak = Data::Riak::Async->new({ transport => $t });
 
 my $cv = AE::cv;
-$riak->ping(sub { $cv->send(@_) });
+$riak->ping(
+    sub { $cv->send(@_)  },
+    sub { $cv->croak(@_) },
+);
 ok $cv->recv, 'Riak server to test against';
 
 done_testing;
