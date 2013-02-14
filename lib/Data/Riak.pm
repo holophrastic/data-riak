@@ -15,6 +15,8 @@ use Data::Riak::HTTP;
 
 use namespace::autoclean;
 
+with 'Data::Riak::Role::Frontend';
+
 =head1 DESCRIPTION
 
 Data::Riak is a simple interface to a Riak server. It is not as complete as
