@@ -134,7 +134,9 @@ sub _send {
     my %plain_headers;
     $http_request->headers->scan(sub {
         # FIXME: overwrites duplicate headers
-        $plain_headers{$_[0]} = $_[1];
+        my ($k, $v) = @_;
+        $k =~ s/^://;
+        $plain_headers{$k} = $v;
     });
 
     # TODO: timeout
