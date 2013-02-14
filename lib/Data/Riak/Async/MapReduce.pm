@@ -13,7 +13,7 @@ sub mapreduce {
         cb   => $cb,
         data => {
             inputs => $self->inputs,
-            query => [ map { { $_->phase => $_->pack } } @{ $self->phases } ]
+            query  => [ map { { $_->phase => $_->pack } } @{ $self->phases } ]
         },
         ($options{'chunked'}
             ? (chunked => 1)
