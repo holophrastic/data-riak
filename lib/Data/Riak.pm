@@ -190,10 +190,10 @@ sub linkwalk {
     my $bucket = $args->{bucket} || confess 'You must have a bucket for the original object to linkwalk';
 
     return $self->send_request({
-        type => 'LinkWalk',
+        type        => 'LinkWalk',
         bucket_name => $bucket,
-        key => $object,
-        params => $args->{params},
+        key         => $object,
+        params      => $args->{params},
     });
 }
 
