@@ -148,7 +148,6 @@ sub remove_async_test_bucket {
     try {
         $cv->recv; $cv2->recv;
     } catch {
-        diag explain $_;
         isa_ok $_, 'Data::Riak::Exception';
     };
 }

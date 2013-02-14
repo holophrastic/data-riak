@@ -13,7 +13,6 @@ use AnyEvent;
 use Data::Riak::Async;
 use Data::Riak::Async::Bucket;
 
-
 my $riak = Data::Riak::Async->new({
     transport => Data::Riak::Async::HTTP->new(riak_transport_args),
 });
