@@ -11,7 +11,8 @@ use Test::Data::Riak;
 
 use AnyEvent;
 use Data::Riak::Async;
-use Data::Riak::Bucket;
+use Data::Riak::Async::HTTP;
+use Data::Riak::Async::Bucket;
 
 skip_unless_riak;
 
