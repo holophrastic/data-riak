@@ -21,18 +21,27 @@ has fallback_handlers => (
 );
 
 sub try_handle_exception {
+    my $e = shift->try_build_exception(@_);
+    die $e if $e;
+    return;
+}
+
+sub try_build_exception {
     my ($self, $request, $http_request, $http_response) = @_;
 
-    my $handled = $self->try_handle_request_specific_exception(
+    my ($handled, $expt) = $self->try_build_request_specific_exception(
         $request, $http_request, $http_response,
     ) if $self->honour_request_specific_exceptions;
 
-    $self->try_handle_exception_fallback(
+    return $expt if $expt;
+    return if $handled;
+
+    return $self->try_build_exception_fallback(
         $request, $http_request, $http_response,
-    ) unless $handled;
+    );
 }
 
-sub try_handle_request_specific_exception {
+sub try_build_request_specific_exception {
     my ($self, $request, $http_request, $http_response) = @_;
 
     return unless $request->does('Data::Riak::Request::WithHTTPExceptionHandling');
@@ -45,22 +54,22 @@ sub try_handle_request_specific_exception {
     );
 
     # this status code isn't fatal for this request
-    return 1 if !defined $expt_class;
+    return (1, undef) if !defined $expt_class;
 
-    $expt_class->throw({
+    return (0, $expt_class->new({
         request            => $request,
         transport_request  => $http_request,
         transport_response => $http_response,
-    });
+    }));
 }
 
-sub try_handle_exception_fallback {
+sub try_build_exception_fallback {
     my ($self, $request, $http_request, $http_response) = @_;
 
     for my $h ($self->fallback_handlers) {
         my ($matcher, $expt_class) = @{ $h };
 
-        $expt_class->throw({
+        return $expt_class->new({
             request            => $request,
             transport_request  => $http_request,
             transport_response => $http_response,
