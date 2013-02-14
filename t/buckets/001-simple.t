@@ -35,11 +35,11 @@ is($obj->value, 'bar', 'Check the value immediately after insertion');
 is($obj->key, 'foo', "Name property is inflated correctly");
 is($obj->bucket_name, $bucket_name, "Bucket name property is inflated correctly");
 
-try {
-    $bucket->get('foo' => { accept => 'application/json' });
-} catch {
-    is($_->code, "406", "asking for an incompatible content type fails with a 406");
-};
+my $e = exception { $bucket->get('foo' => { accept => 'application/json' }) };
+ok $e, 'asking for an incompatible content type fails';
+isa_ok $e, 'Data::Riak::Exception::ClientError';
+is $e->transport_response->code, 406,
+    'asking for an incompatible content type fails with a 406';
 
 is_deeply(
     $bucket->list_keys,
