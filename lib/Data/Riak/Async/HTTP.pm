@@ -77,7 +77,7 @@ sub create_request {
 }
 
 sub send {
-    my ($self, $request, $cb) = @_;
+    my ($self, $request, $cb, $error_cb) = @_;
 
     my $http_request = $self->create_request($request);
 
@@ -86,9 +86,10 @@ sub send {
 
         # FIXME: don't croak in event loop. signal exception through user
         #        callback
-        $self->exception_handler->try_handle_exception(
+        my $e = $self->exception_handler->try_build_exception(
             $request, $http_request, $http_response,
         );
+        return $error_cb->($e) if $e;
 
         $cb->($http_response);
     });
@@ -145,6 +146,7 @@ sub _send {
                 delete $hdr->{Status}, delete $hdr->{Reason},
                 HTTP::Headers->new(%{ $hdr }), $body,
             );
+            $http_response->request($http_request);
 
             my $response = Data::Riak::HTTP::Response->new({
                 http_response => $http_response

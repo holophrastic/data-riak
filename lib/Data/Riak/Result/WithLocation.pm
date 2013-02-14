@@ -84,9 +84,9 @@ the latest version of the object in storage.
 # object
 my %warned_for;
 sub sync {
-    my ($self) = @_;
+    my ($self, %opts) = @_;
 
-    my $new_result = $self->bucket->get( $self->key );
+    my $new_result = $self->bucket->get( $self->key, \%opts );
     if (!defined wantarray) {
         my $caller = caller;
         warn "${caller} is using the deprecated ->sync in void context"
@@ -126,6 +126,8 @@ sub save {
             links => (exists $opts{new_links} ? $opts{new_links} : $self->links),
             return_body  => 1,
             vector_clock => $self->vector_clock,
+            (exists $opts{cb} ? (cb => $opts{cb}) : ()),
+            (exists $opts{error_cb} ? (error_cb => $opts{error_cb}) : ()),
         },
     );
 }
@@ -153,6 +155,8 @@ sub save_unless_modified {
             vector_clock => $self->vector_clock,
             if_unmodified_since => $self->last_modified . '',
             if_match => $self->etag,
+            (exists $opts{cb} ? (cb => $opts{cb}) : ()),
+            (exists $opts{error_cb} ? (error_cb => $opts{error_cb}) : ()),
         },
     );
 }
@@ -164,12 +168,14 @@ See L<Data::Riak/LINKWALKING>.
 =cut
 
 sub linkwalk {
-    my ($self, $params) = @_;
+    my ($self, $params, $cb, $error_cb) = @_;
     return undef unless $params;
     return $self->riak->linkwalk({
-        bucket => $self->bucket_name,
-        object => $self->key,
-        params => $params
+        bucket   => $self->bucket_name,
+        object   => $self->key,
+        params   => $params,
+        cb       => $cb,
+        error_cb => $error_cb,
     });
 }
 

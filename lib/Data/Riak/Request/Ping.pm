@@ -13,6 +13,7 @@ sub as_http_request_args {
     };
 }
 
+# FIXME: Consider all server errors non fatal, not just 500
 sub _build_http_exception_classes {
     return {
         500 => undef,

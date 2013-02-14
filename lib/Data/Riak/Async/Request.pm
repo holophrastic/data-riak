@@ -9,4 +9,10 @@ has cb => (
     required => 1,
 );
 
+has error_cb => (
+    is       => 'ro',
+    isa      => 'CodeRef',
+    required => 1,
+);
+
 1;
