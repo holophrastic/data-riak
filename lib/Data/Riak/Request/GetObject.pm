@@ -6,12 +6,19 @@ use Data::Riak::Exception::ObjectNotFound;
 use Data::Riak::Exception::MultipleSiblingsAvailable;
 use namespace::autoclean;
 
+has accept => (
+    is        => 'ro',
+    isa       => 'Str',
+    predicate => 'has_accept',
+);
+
 sub as_http_request_args {
     my ($self) = @_;
 
     return {
         method => 'GET',
         uri    => sprintf('buckets/%s/keys/%s', $self->bucket_name, $self->key),
+        ($self->has_accept ? (accept => $self->accept) : ()),
     };
 }
 

@@ -149,6 +149,7 @@ sub get {
         if exists $opts->{'accept'} && $opts->{'accept'} eq 'multipart/mixed';
 
     return $self->riak->send_request({
+        %{ $opts },
         type        => 'GetObject',
         bucket_name => $self->name,
         key         => $key,
