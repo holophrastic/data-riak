@@ -36,24 +36,35 @@ for my $opt (keys %defaults) {
     *{"_default_${opt}"} = $code;
 }
 
-sub _build_transport {
+sub _build_transport_args {
     my ($args) = @_;
 
     my $protocol = exists $args->{protocol}
         ? $args->{protocol} : _default_protocol();
 
     my $https = $protocol eq 'https';
-    Data::Riak->new({
-        transport => Data::Riak::HTTP->new({
-            protocol => $protocol,
-            timeout  => (exists $args->{timeout}
-                             ? $args->{timeout} : _default_timeout($https)),
-            host     => (exists $args->{host}
-                             ? $args->{host} : _default_host($https)),
-            port     => (exists $args->{port}
-                             ? $args->{port} : _default_port($https)),
-        }),
-    });
+
+    return {
+        protocol => $protocol,
+        timeout  => (exists $args->{timeout}
+                         ? $args->{timeout} : _default_timeout($https)),
+        host     => (exists $args->{host}
+                         ? $args->{host} : _default_host($https)),
+        port     => (exists $args->{port}
+                         ? $args->{port} : _default_port($https)),
+    };
+}
+
+sub _build_transport {
+    my $args = _build_transport_args(@_);
+    ($args, Data::Riak->new({
+        transport => Data::Riak::HTTP->new($args),
+    }));
+}
+
+sub _build_riak_transport_args {
+    my ($class, $name, $args, $col) = @_;
+    sub { $col->{transport_args} };
 }
 
 sub _build_riak_transport {
@@ -73,6 +84,7 @@ sub _build_skip_unless_leveldb_backend {
 
 my $import = Sub::Exporter::build_exporter({
     exports    => [
+        riak_transport_args         => \&_build_riak_transport_args,
         riak_transport              => \&_build_riak_transport,
         remove_test_bucket          => sub { \&remove_test_bucket },
         create_test_bucket_name     => sub { \&create_test_bucket_name },
@@ -80,18 +92,22 @@ my $import = Sub::Exporter::build_exporter({
         skip_unless_leveldb_backend => \&_build_skip_unless_leveldb_backend,
     ],
     groups     => {
-        default => [qw(riak_transport remove_test_bucket create_test_bucket_name
-                       skip_unless_riak skip_unless_leveldb_backend)],
+        default => [qw(riak_transport riak_transport_args remove_test_bucket
+                       create_test_bucket_name skip_unless_riak
+                       skip_unless_leveldb_backend)],
     },
-    collectors => ['transport'],
+    collectors => ['transport', 'transport_args'],
     into_level => 1,
 });
 
 sub import {
     my ($class, @args) = @_;
     my $transport_args = ref $args[0] eq 'HASH' ? shift @args : {};
-    my $transport = _build_transport($transport_args);
-    $import->($class, transport => $transport, @args ? @args : '-default');
+    my ($computed_transport_args, $transport) = _build_transport($transport_args);
+    $import->($class,
+              transport      => $transport,
+              transport_args => $computed_transport_args,
+              @args ? @args : '-default');
 }
 
 sub create_test_bucket_name {
