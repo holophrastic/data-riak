@@ -205,7 +205,7 @@ sub search_index {
         $inputs->{'key'} = $values;
     }
 
-    my $search_mr = Data::Riak::MapReduce->new({
+    my $search_mr = Data::Riak::Async::MapReduce->new({
         riak => $self->riak,
         inputs => $inputs,
         phases => [
