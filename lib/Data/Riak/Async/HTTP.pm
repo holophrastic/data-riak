@@ -128,16 +128,14 @@ sub _send {
     my $http_request = HTTP::Request->new(
         $request->method => $uri->as_string,
         $headers,
-        $request->data
+        $request->data,
     );
 
     my %plain_headers;
-    $http_request->headers->scan(sub {
-        # FIXME: overwrites duplicate headers
-        my ($k, $v) = @_;
-        $k =~ s/^://;
-        $plain_headers{$k} = $v;
-    });
+    for my $k ($http_request->headers->header_field_names) {
+        (my $normalised = $k) =~ s/^://;
+        $plain_headers{$normalised} = $http_request->headers->header($k);
+    }
 
     # TODO: timeout
     http_request $http_request->method, $http_request->uri,
