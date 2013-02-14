@@ -34,11 +34,10 @@ $bucket->add('foo', '{"bar":1}', { content_type => 'application/json' });
     is($obj->content_type->type, 'application/json', '... got the right type');
 }
 
-try {
-    $bucket->get('foo' => { accept => 'text/html' });
-} catch {
-    is($_->code, "406", "asking for an incompatible content type fails with a 406");
-};
+my $e = exception { $bucket->get('foo' => { accept => 'text/html' }) };
+isa_ok $e, 'Data::Riak::Exception::ClientError';
+is $e->transport_response->code, 406,
+    'asking for an incompatible content type fails with a 406';
 
 remove_test_bucket($bucket);
 
