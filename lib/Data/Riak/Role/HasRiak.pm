@@ -5,8 +5,8 @@ use namespace::autoclean;
 
 has riak => (
     is       => 'ro',
-    isa      => 'Data::Riak',
-    required => 1
+    does     => 'Data::Riak::Role::Frontend',
+    required => 1,
 );
 
 1;
