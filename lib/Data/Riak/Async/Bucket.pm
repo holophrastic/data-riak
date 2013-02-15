@@ -259,7 +259,7 @@ sub resolve_alias {
 
     $self->linkwalk($alias, [[ 'perl-data-riak-alias', '_' ]], {
         %{ $opts },
-        cb => sub { $opts->{cb}->(shift->first) },
+        retval_mangler => sub { shift->first },
     });
 
     return;

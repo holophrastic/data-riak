@@ -201,9 +201,10 @@ sub remove_all {
 }
 
 sub linkwalk {
-    my ($self, $object, $params) = @_;
+    my ($self, $object, $params, $opts) = @_;
     return undef unless $params;
     return $self->riak->linkwalk({
+        %{ $opts || {} },
         bucket => $self->name,
         object => $object,
         params => $params
@@ -293,7 +294,9 @@ Returns the L<Data::Riak::Result> that $alias points to.
 
 sub resolve_alias {
     my ($self, $alias) = @_;
-    return $self->linkwalk($alias, [[ 'perl-data-riak-alias', '_' ]])->first;
+    return $self->linkwalk($alias, [[ 'perl-data-riak-alias', '_' ]], {
+        retval_mangler => sub { shift->first },
+    });
 }
 
 __PACKAGE__->meta->make_immutable;

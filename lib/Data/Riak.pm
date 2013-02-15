@@ -140,14 +140,14 @@ sub resolve_link {
 
 sub linkwalk {
     my ($self, $args) = @_;
-    my $object = $args->{object} || confess 'You must have an object to linkwalk';
-    my $bucket = $args->{bucket} || confess 'You must have a bucket for the original object to linkwalk';
+    my $object = delete $args->{object} || confess 'You must have an object to linkwalk';
+    my $bucket = delete $args->{bucket} || confess 'You must have a bucket for the original object to linkwalk';
 
     return $self->send_request({
+        %{ $args || {} },
         type        => 'LinkWalk',
         bucket_name => $bucket,
         key         => $object,
-        params      => $args->{params},
     });
 }
 
