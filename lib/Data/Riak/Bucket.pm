@@ -19,8 +19,7 @@ use JSON::XS qw/decode_json encode_json/;
 
 use namespace::autoclean;
 
-with 'Data::Riak::Role::HasRiak',
-     'Data::Riak::Role::Bucket';
+with 'Data::Riak::Role::Bucket';
 
 =head1 DESCRIPTION
 
@@ -60,84 +59,13 @@ happen here.
 This will insert a key C<$key> into the bucket, with value C<$value>. The C<$opts>
 can include links, allowed content types, or queries.
 
-=cut
-
-sub add {
-    my ($self, $key, $value, $opts) = @_;
-
-    $opts ||= {};
-
-    my $pack = $self->_build_linklist($opts->{links});
-
-    # TODO:
-    # need to support other headers
-    #   X-Riak-Vclock if the object already exists, the vector clock attached to the object when read.
-    #   X-Riak-Meta-* - any additional metadata headers that should be stored with the object.
-    # see http://wiki.basho.com/HTTP-Store-Object.html
-    # - SL
-
-    return $self->riak->send_request({
-        type        => 'StoreObject',
-        bucket_name => $self->name,
-        key         => $key,
-        value       => $value,
-        links       => $pack,
-        return_body => $opts->{return_body},
-        (exists $opts->{content_type}
-             ? (content_type => $opts->{content_type}) : ()),
-        (exists $opts->{indexes}
-             ? (indexes => $opts->{indexes}) : ()),
-        (exists $opts->{vector_clock}
-             ? (vector_clock => $opts->{vector_clock}) : ()),
-        (exists $opts->{if_unmodified_since}
-             ? (if_unmodified_since => $opts->{if_unmodified_since}) : ()),
-        (exists $opts->{if_match}
-             ? (if_match => $opts->{if_match}) : ()),
-    });
-}
-
 =method remove ($key, $opts)
 
 This will remove a key C<$key> from the bucket.
 
-=cut
-
-sub remove {
-    my ($self, $key, $opts) = @_;
-
-    $opts ||= {};
-
-    return $self->riak->send_request({
-        type        => 'RemoveObject',
-        bucket_name => $self->name,
-        key         => $key,
-    });
-}
-
 =method get ($key, $opts)
 
 This will get a key C<$key> from the bucket, returning a L<Data::Riak::Result> object.
-
-=cut
-
-
-sub get {
-    my ($self, $key, $opts) = @_;
-
-    confess "This method requires a key" unless $key;
-
-    $opts ||= {};
-
-    confess "This method does not support multipart/mixed responses"
-        if exists $opts->{'accept'} && $opts->{'accept'} eq 'multipart/mixed';
-
-    return $self->riak->send_request({
-        %{ $opts },
-        type        => 'GetObject',
-        bucket_name => $self->name,
-        key         => $key,
-    });
-}
 
 =method list_keys
 
@@ -145,44 +73,11 @@ List all the keys in the bucket. Warning: This is expensive, as it has to scan
 every key in the system, so don't use it unless you mean it, and know what you're
 doing.
 
-=cut
-
-sub list_keys {
-    my $self = shift;
-
-    return $self->riak->send_request({
-        type        => 'ListBucketKeys',
-        bucket_name => $self->name,
-    });
-}
-
 =method count
 
 Count all the keys in a bucket. This uses MapReduce to figure out the answer, so
 it's expensive; Riak does not keep metadata on buckets for reasons that are beyond
 the scope of this module (but are well documented, so if you are interested, read up).
-
-=cut
-
-sub count {
-    my $self = shift;
-    my $map_reduce = Data::Riak::MapReduce->new({
-        riak => $self->riak,
-        inputs => $self->name,
-        phases => [
-            Data::Riak::Util::MapCount->new,
-            Data::Riak::Util::ReduceCount->new
-        ],
-    });
-    return $map_reduce->mapreduce(
-        retval_mangler => sub {
-            my ($map_reduce_results) = @_;
-            my ($result) = $map_reduce_results->results->[0];
-            my ($count) = decode_json($result->value) || 0;
-            return $count->[0];
-        },
-    );
-}
 
 =method remove_all
 
@@ -198,17 +93,6 @@ sub remove_all {
     foreach my $key ( @$keys ) {
         $self->remove( $key );
     }
-}
-
-sub linkwalk {
-    my ($self, $object, $params, $opts) = @_;
-    return undef unless $params;
-    return $self->riak->linkwalk({
-        %{ $opts || {} },
-        bucket => $self->name,
-        object => $object,
-        params => $params
-    });
 }
 
 =method search_index
@@ -251,25 +135,6 @@ sub pretty_search_index {
     return [ sort map { $_->[1] } @{decode_json($self->search_index($opts))} ];
 }
 
-sub props {
-    my $self = shift;
-
-    return $self->riak->send_request({
-        type        => 'GetBucketProps',
-        bucket_name => $self->name,
-    });
-}
-
-sub set_props {
-    my ($self, $props) = @_;
-
-    return $self->riak->send_request({
-        type        => 'SetBucketProps',
-        bucket_name => $self->name,
-        props       => $props,
-    });
-}
-
 =method create_alias ($opts)
 
 Creates an alias for a record using links. Helpful if your primary ID is a UUID or
@@ -278,26 +143,11 @@ some other automatically generated identifier. Can cross buckets, as well.
     $bucket->create_alias({ key => '123456', as => 'foo' });
     $bucket->create_alias({ key => '123456', as => 'foo', in => $other_bucket });
 
-=cut
-
-sub create_alias {
-    my ($self, $opts) = @_;
-    my $bucket = $opts->{in} || $self;
-    $bucket->add($opts->{as}, $opts->{key}, { links => [ Data::Riak::Link->new( bucket => $bucket->name, riaktag => 'perl-data-riak-alias', key => $opts->{key} )] });
-}
-
 =method resolve_alias ($alias)
 
 Returns the L<Data::Riak::Result> that $alias points to.
 
 =cut
-
-sub resolve_alias {
-    my ($self, $alias) = @_;
-    return $self->linkwalk($alias, [[ 'perl-data-riak-alias', '_' ]], {
-        retval_mangler => sub { shift->first },
-    });
-}
 
 __PACKAGE__->meta->make_immutable;
 

@@ -5,123 +5,7 @@ use JSON 'decode_json';
 use Data::Riak::Async::MapReduce;
 use namespace::autoclean;
 
-with 'Data::Riak::Role::HasRiak',
-     'Data::Riak::Role::Bucket';
-
-sub add {
-    my ($self, $key, $value, $opts) = @_;
-
-    confess 'you need to provide a callback'
-        if !$opts || !exists $opts->{cb};
-    confess 'you need to provide an error callback'
-        if !$opts || !exists $opts->{error_cb};
-
-    my $pack = $self->_build_linklist($opts->{links});
-
-    $self->riak->send_request({
-        cb          => $opts->{cb},
-        error_cb    => $opts->{error_cb},
-        type        => 'StoreObject',
-        bucket_name => $self->name,
-        key         => $key,
-        value       => $value,
-        links       => $pack,
-        return_body => $opts->{return_body},
-        (exists $opts->{content_type}
-             ? (content_type => $opts->{content_type}) : ()),
-        (exists $opts->{indexes}
-             ? (indexes => $opts->{indexes}) : ()),
-        (exists $opts->{vector_clock}
-             ? (vector_clock => $opts->{vector_clock}) : ()),
-        (exists $opts->{if_unmodified_since}
-             ? (if_unmodified_since => $opts->{if_unmodified_since}) : ()),
-        (exists $opts->{if_match}
-             ? (if_match => $opts->{if_match}) : ()),
-    });
-
-    return;
-}
-
-sub remove {
-    my ($self, $key, $opts) = @_;
-
-    confess 'you need to provide a callback'
-        if !$opts || !exists $opts->{cb};
-
-    confess 'you need to provide an error callback'
-        if !$opts || !exists $opts->{error_cb};
-
-    $self->riak->send_request({
-        type        => 'RemoveObject',
-        bucket_name => $self->name,
-        key         => $key,
-        cb          => $opts->{cb},
-        error_cb    => $opts->{error_cb},
-    });
-
-    return;
-}
-
-sub get {
-    my ($self, $key, $opts) = @_;
-
-    confess "This method requires a key" unless $key;
-
-    confess 'you need to provide a callback'
-        if !$opts || !exists $opts->{cb};
-
-    confess 'you need to provide an error callback'
-        if !$opts || !exists $opts->{error_cb};
-
-    confess "This method does not support multipart/mixed responses"
-        if exists $opts->{'accept'} && $opts->{'accept'} eq 'multipart/mixed';
-
-    $self->riak->send_request({
-        %{ $opts },
-        type        => 'GetObject',
-        bucket_name => $self->name,
-        key         => $key,
-    });
-
-    return;
-}
-
-sub list_keys {
-    my ($self, $opts) = @_;
-
-    $self->riak->send_request({
-        %{ $opts },
-        type        => 'ListBucketKeys',
-        bucket_name => $self->name,
-    });
-
-    return;
-}
-
-sub count {
-    my ($self, $opts) = @_;
-
-    my $map_reduce = Data::Riak::Async::MapReduce->new({
-        riak   => $self->riak,
-        inputs => $self->name,
-        phases => [
-            Data::Riak::Util::MapCount->new,
-            Data::Riak::Util::ReduceCount->new
-        ],
-    });
-
-    $map_reduce->mapreduce(
-        %{ $opts },
-        retval_mangler => sub {
-            my ($map_reduce_results) = @_;
-            my ($result) = $map_reduce_results->results->[0];
-            my ($count) = decode_json($result->value) || 0;
-            return $count->[0];
-        },
-    );
-
-    return;
-}
+with 'Data::Riak::Role::Bucket';
 
 sub remove_all {
     my ($self, $opts) = @_;
@@ -144,20 +28,6 @@ sub remove_all {
                 });
             }
         },
-    });
-
-    return;
-}
-
-sub linkwalk {
-    my ($self, $object, $params, $opts) = @_;
-    return undef unless $params;
-
-    $self->riak->linkwalk({
-        %{ $opts },
-        bucket => $self->name,
-        object => $object,
-        params => $params,
     });
 
     return;
@@ -209,60 +79,6 @@ sub pretty_search_index {
             $cb->([sort map { $_->[1] } @{ decode_json shift }]);
         },
     });
-}
-
-sub props {
-    my ($self, $opts) = @_;
-
-    $self->riak->send_request({
-        %{ $opts },
-        type        => 'GetBucketProps',
-        bucket_name => $self->name,
-    });
-
-    return;
-}
-
-sub set_props {
-    my ($self, $props, $opts) = @_;
-
-    $self->riak->send_request({
-        %{ $opts },
-        type        => 'SetBucketProps',
-        bucket_name => $self->name,
-        props       => $props,
-    });
-
-    return;
-}
-
-sub create_alias {
-    my ($self, $opts) = @_;
-    my $bucket = delete $opts->{in} || $self;
-
-    $bucket->add($opts->{as}, $opts->{key}, {
-        %{ $opts },
-        links => [
-            Data::Riak::Link->new(
-                bucket => $bucket->name,
-                riaktag => 'perl-data-riak-alias',
-                key => $opts->{key},
-            ),
-        ],
-    });
-
-    return;
-}
-
-sub resolve_alias {
-    my ($self, $alias, $opts) = @_;
-
-    $self->linkwalk($alias, [[ 'perl-data-riak-alias', '_' ]], {
-        %{ $opts },
-        retval_mangler => sub { shift->first },
-    });
-
-    return;
 }
 
 __PACKAGE__->meta->make_immutable;

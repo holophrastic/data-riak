@@ -70,6 +70,8 @@ sub _build_request_classes {
 
 sub _build_bucket_class { 'Data::Riak::Bucket' }
 
+sub _build_mapreduce_class { 'Data::Riak::MapReduce' }
+
 sub send_request {
     my ($self, $request_data) = @_;
 
@@ -91,13 +93,6 @@ sub send_request {
 Tests to see if the specified Riak server is answering. Returns 0 for no, 1 for
 yes.
 
-=cut
-
-sub ping {
-    my ($self) = @_;
-    return $self->send_request({ type => 'Ping' });
-}
-
 =method status
 
 Attempts to retrieve information about the performance and configuration of the
@@ -105,53 +100,15 @@ Riak node. Returns a hash reference containing the data provided by the
 C</stats> endpoint of the Riak node or throws an exception if the status
 information could not be retrieved.
 
-=cut
-
-sub status {
-    my ($self) = @_;
-    return $self->send_request({ type => 'Status' });
-}
-
 =method _buckets
 
 Get the list of buckets. This is NOT RECOMMENDED for production systems, as Riak
 has to essentially walk the entire database. Here purely as a tool for debugging
 and convenience.
 
-=cut
-
-sub _buckets {
-    my $self = shift;
-    return $self->send_request({
-        type => 'ListBuckets',
-    });
-}
-
 =method bucket ($name)
 
 Given a C<$name>, this will return a L<Data::Riak::Bucket> object for it.
-
-=cut
-
-sub resolve_link {
-    my ($self, $link) = @_;
-    $self->bucket( $link->bucket )->get( $link->key );
-}
-
-sub linkwalk {
-    my ($self, $args) = @_;
-    my $object = delete $args->{object} || confess 'You must have an object to linkwalk';
-    my $bucket = delete $args->{bucket} || confess 'You must have a bucket for the original object to linkwalk';
-
-    return $self->send_request({
-        %{ $args || {} },
-        type        => 'LinkWalk',
-        bucket_name => $bucket,
-        key         => $object,
-    });
-}
-
-=pod
 
 =head1 LINKWALKING
 

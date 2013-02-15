@@ -19,6 +19,8 @@ sub _build_request_classes {
 
 sub _build_bucket_class { 'Data::Riak::Async::Bucket' }
 
+sub _build_mapreduce_class { 'Data::Riak::Async::MapReduce' }
+
 sub send_request {
     my ($self, $request_data) = @_;
 
@@ -43,59 +45,6 @@ sub send_request {
         },
         $request->error_cb,
     );
-
-    return;
-}
-
-sub ping {
-    my ($self, $opts) = @_;
-
-    $self->send_request({
-        %{ $opts },
-        type => 'Ping',
-    });
-
-    return;
-}
-
-sub status {
-    my ($self, $opts) = @_;
-
-    $self->send_request({
-        %{ $opts },
-        type => 'Status',
-    });
-
-    return;
-}
-
-sub _buckets {
-    my ($self, $opts) = @_;
-
-    $self->send_request({
-        %{ $opts },
-        type => 'ListBuckets',
-    });
-
-    return;
-}
-
-sub resolve_link {
-    my ($self, $link, $opts) = @_;
-    $self->bucket( $link->bucket )->get($link->key => $opts);
-}
-
-sub linkwalk {
-    my ($self, $args) = @_;
-    my $object = delete $args->{object} || confess 'You must have an object to linkwalk';
-    my $bucket = delete $args->{bucket} || confess 'You must have a bucket for the original object to linkwalk';
-
-    $self->send_request({
-        %{ $args },
-        type        => 'LinkWalk',
-        bucket_name => $bucket,
-        key         => $object,
-    });
 
     return;
 }

@@ -34,6 +34,15 @@ has bucket_class => (
     },
 );
 
+has mapreduce_class => (
+    is      => 'ro',
+    isa     => 'ClassName',
+    builder => '_build_mapreduce_class',
+    handles => {
+        new_mapreduce => 'new',
+    },
+);
+
 sub BUILD {}
 after BUILD => sub {
     my ($self) = @_;
@@ -59,6 +68,51 @@ sub bucket {
     return $self->_new_bucket({
         riak => $self,
         name => $bucket_name,
+    });
+}
+
+sub ping {
+    my ($self, $opts) = @_;
+
+    return $self->send_request({
+        %{ $opts || {} },
+        type => 'Ping',
+    });
+}
+
+sub status {
+    my ($self, $opts) = @_;
+
+    return $self->send_request({
+        %{ $opts || {} },
+        type => 'Status',
+    });
+}
+
+sub _buckets {
+    my ($self, $opts) = @_;
+
+    return $self->send_request({
+        %{ $opts || {} },
+        type => 'ListBuckets',
+    });
+}
+
+sub resolve_link {
+    my ($self, $link, $opts) = @_;
+    $self->bucket($link->bucket)->get($link->key => $opts);
+}
+
+sub linkwalk {
+    my ($self, $args) = @_;
+    my $object = delete $args->{object} || confess 'You must have an object to linkwalk';
+    my $bucket = delete $args->{bucket} || confess 'You must have a bucket for the original object to linkwalk';
+
+    return $self->send_request({
+        %{ $args },
+        type        => 'LinkWalk',
+        bucket_name => $bucket,
+        key         => $object,
     });
 }
 
