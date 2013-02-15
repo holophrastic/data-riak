@@ -89,7 +89,6 @@ slow on larger systems.
 sub remove_all {
     my $self = shift;
     my $keys = $self->list_keys;
-    return unless ref $keys eq 'ARRAY' && @$keys;
     foreach my $key ( @$keys ) {
         $self->remove( $key );
     }
