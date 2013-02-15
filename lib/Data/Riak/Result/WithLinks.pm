@@ -53,6 +53,8 @@ Returns a clone of the instance, with the new link added to its list of links.
 
 sub add_link {
     my ($self, $link) = @_;
+    confess 'No link to add provided'
+        unless blessed $link && $link->isa('Data::Riak::Link');
     return $self->clone(links => [@{ $self->links }, $link]);
 }
 
