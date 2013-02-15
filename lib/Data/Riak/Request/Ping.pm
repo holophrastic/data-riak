@@ -13,10 +13,11 @@ sub as_http_request_args {
     };
 }
 
-# FIXME: Consider all server errors non fatal, not just 500
 sub _build_http_exception_classes {
     return {
-        500 => undef,
+        # This is a bit of a hack. Maybe we want to allow predicate functions to
+        # be provided, or at least regexen or some such.
+        (map { ($_ => undef) } 500 .. 599),
     };
 }
 
