@@ -19,8 +19,6 @@ use Data::Riak::HTTP::ExceptionHandler::Default;
 
 use namespace::autoclean;
 
-with 'Data::Riak::Transport';
-
 =attr host
 
 The host the Riak server is on. Can be set via the environment variable
@@ -276,6 +274,8 @@ sub _send {
 
     return $response;
 }
+
+with 'Data::Riak::Transport';
 
 =begin :postlude
 
