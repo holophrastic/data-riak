@@ -208,8 +208,7 @@ sub _send {
     return $response;
 }
 
-with 'Data::Riak::Transport::Sync',
-     'Data::Riak::Transport::HTTP';
+with 'Data::Riak::Transport::HTTP';
 
 =begin :postlude
 

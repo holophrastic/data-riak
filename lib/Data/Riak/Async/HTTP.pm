@@ -110,8 +110,7 @@ sub _send_via_anyevent_http {
     return;
 }
 
-with 'Data::Riak::Transport::Async',
-     'Data::Riak::Transport::HTTP';
+with 'Data::Riak::Transport::HTTP';
 
 __PACKAGE__->meta->make_immutable;
 
