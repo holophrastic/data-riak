@@ -99,14 +99,6 @@ sub remove_all {
 
 Searches a Secondary Index to find results.
 
-=cut
-
-# returns JUST the list of keys. human readable, not designed for MapReduce inputs.
-sub pretty_search_index {
-    my ($self, $opts) = @_;
-    return [ sort map { $_->[1] } @{decode_json($self->search_index($opts))} ];
-}
-
 =method create_alias ($opts)
 
 Creates an alias for a record using links. Helpful if your primary ID is a UUID or

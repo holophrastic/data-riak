@@ -32,19 +32,6 @@ sub remove_all {
     return;
 }
 
-sub pretty_search_index {
-    my ($self, $opts) = @_;
-
-    my $cb = delete $opts->{cb};
-
-    $self->search_index({
-        %{ $opts },
-        cb => sub { # TODO: retval mangler
-            $cb->([sort map { $_->[1] } @{ decode_json shift }]);
-        },
-    });
-}
-
 __PACKAGE__->meta->make_immutable;
 
 1;

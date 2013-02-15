@@ -212,10 +212,24 @@ sub search_index {
         ],
     });
 
+    # honour the passed in mangler so pretty_search_index can be easier
+    $opts ||= {};
+    my $retval_mangler = delete $opts->{retval_mangler} || sub { $_[0] };
+
     return $search_mr->mapreduce(
-        %{ $opts || {} },
-        retval_mangler => sub { shift->results->[0]->value },
+        %{ $opts },
+        retval_mangler => sub { $retval_mangler->(shift->results->[0]->value) },
     );
+}
+
+# returns JUST the list of keys. human readable, not designed for MapReduce inputs.
+sub pretty_search_index {
+    my ($self, $opts) = @_;
+
+    return $self->search_index({
+        %{ $opts || {} },
+        retval_mangler => sub { [sort map { $_->[1] } @{ decode_json shift }] },
+    });
 }
 
 1;
