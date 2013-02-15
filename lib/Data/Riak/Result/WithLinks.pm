@@ -53,7 +53,6 @@ Returns a clone of the instance, with the new link added to its list of links.
 
 sub add_link {
     my ($self, $link) = @_;
-    return undef unless $link;
     return $self->clone(links => [@{ $self->links }, $link]);
 }
 
