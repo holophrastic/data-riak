@@ -158,6 +158,8 @@ sub _send {
     return;
 }
 
+with 'Data::Riak::Transport::Async';
+
 __PACKAGE__->meta->make_immutable;
 
 1;

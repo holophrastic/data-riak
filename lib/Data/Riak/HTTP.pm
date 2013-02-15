@@ -275,7 +275,7 @@ sub _send {
     return $response;
 }
 
-with 'Data::Riak::Transport';
+with 'Data::Riak::Transport::Sync';
 
 =begin :postlude
 
