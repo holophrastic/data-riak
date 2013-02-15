@@ -12,7 +12,7 @@ sub remove_all {
     my ($cb, $error_cb) = map { $opts->{$_} } qw(cb error_cb);
     $self->list_keys({
         error_cb => $error_cb,
-        cb       => sub { # TODO: retval mangler?
+        cb       => sub {
             my ($keys) = @_;
             return $cb->() unless ref $keys eq 'ARRAY' && @$keys;
 
