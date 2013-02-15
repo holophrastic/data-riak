@@ -29,19 +29,19 @@ my $bucket = Data::Riak::Async::Bucket->new({
 
 {
     my $cv = AE::cv;
-    $bucket->count(
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    $bucket->count({
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
     is $cv->recv, 0, 'No keys in the bucket';
 }
 
 {
     my $cv = AE::cv;
-    my $props = $bucket->props(
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    my $props = $bucket->props({
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
 
     is ref $cv->recv, 'HASH', '... got back a HASH ref';
 }
@@ -85,20 +85,20 @@ is $obj->bucket_name, $bucket_name, 'Bucket name property is inflated correctly'
 
 {
     my $cv = AE::cv;
-    $bucket->list_keys(
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    $bucket->list_keys({
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
 
     is_deeply $cv->recv, ['foo'], '... got the keys we expected';
 }
 
 {
     my $cv = AE::cv;
-    $bucket->count(
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    $bucket->count({
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
 
     is $cv->recv, 1, 'One key in the bucket';
 }
@@ -191,10 +191,10 @@ is $obj->bucket_name, $bucket_name, 'Bucket name property is inflated correctly'
 {
 
     my $cv = AE::cv;
-    $bucket->list_keys(
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    $bucket->list_keys({
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
 
     is_deeply [sort @{ $cv->recv }], ['bar', 'baz', 'foo'],
         '... got the keys we expected';
@@ -202,10 +202,10 @@ is $obj->bucket_name, $bucket_name, 'Bucket name property is inflated correctly'
 
 {
     my $cv = AE::cv;
-    $bucket->count(
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    $bucket->count({
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
 
     is $cv->recv, 3, 'Three keys in the bucket';
 }
@@ -228,11 +228,10 @@ is $obj->bucket_name, $bucket_name, 'Bucket name property is inflated correctly'
 
 {
     my $cv = AE::cv;
-    $bucket->linkwalk(
-        'foo', [[ 'not a buddy', '_' ]],
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    $bucket->linkwalk('foo', [[ 'not a buddy', '_' ]], {
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
 
     my $resultset = $cv->recv;
     isa_ok $resultset, 'Data::Riak::ResultSet';
@@ -244,17 +243,17 @@ is $obj->bucket_name, $bucket_name, 'Bucket name property is inflated correctly'
     my $get_cbs = sub {
         my $cv = AE::cv;
         push @cvs, $cv;
-        (sub { $cv->send(@_) }, sub { $cv->croak(@_) });
+        (cb => sub { $cv->send(@_) }, error_cb => sub { $cv->croak(@_) });
     };
 
     $bucket->linkwalk(
         'foo', [[ 'not a buddy', '_' ]],
-        $get_cbs->(),
+        { $get_cbs->() },
     );
 
     $bucket->linkwalk(
         'bar', [ [ 'buddy', '_' ], [ $bucket_name, 'not a buddy', '_' ] ],
-        $get_cbs->(),
+        { $get_cbs->() },
     );
 
     my ($resultset, $dw_results) = map { $_->recv } @cvs;
@@ -264,10 +263,10 @@ is $obj->bucket_name, $bucket_name, 'Bucket name property is inflated correctly'
 
 {
     my $cv = AE::cv;
-    $riak->_buckets(
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    $riak->_buckets({
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
 
     ok +(grep { $_ eq $bucket_name } @{ $cv->recv }),
        '_buckets lists our new bucket';
@@ -281,11 +280,13 @@ is $obj->bucket_name, $bucket_name, 'Bucket name property is inflated correctly'
 
     my ($remove_all_and_wait, $t);
     $remove_all_and_wait = sub {
-        $bucket->remove_all(
-            sub {
+        $bucket->remove_all({
+            error_cb => sub { $cv->croak(@_) },
+            cb       => sub {
                 $t = AE::timer 1, 0, sub {
-                    $bucket->list_keys(
-                        sub {
+                    $bucket->list_keys({
+                        error_cb => sub { $cv->croak(@_) },
+                        cb       => sub {
                             my ($keys) = @_;
 
                             if ($keys && @{ $keys }) {
@@ -295,12 +296,10 @@ is $obj->bucket_name, $bucket_name, 'Bucket name property is inflated correctly'
 
                             $cv->send;
                         },
-                        sub { $cv->croak(@_) },
-                    );
+                    });
                 },
             },
-            sub { $cv->croak(@_) },
-        );
+        });
     };
 
     $remove_all_and_wait->();

@@ -31,11 +31,10 @@ isa_ok $link, 'Data::Riak::Link';
 
 {
     my $cv = AE::cv;
-    $riak->resolve_link(
-        $link,
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    $riak->resolve_link($link, {
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
 
     my $e = exception { $cv->recv };
     isa_ok $e, 'Data::Riak::Exception::ObjectNotFound';
@@ -52,11 +51,10 @@ isa_ok $link, 'Data::Riak::Link';
 
 {
     my $cv = AE::cv;
-    $riak->resolve_link(
-        $link,
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    $riak->resolve_link($link, {
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
 
     my $result = $cv->recv;
     isa_ok $result, 'Data::Riak::Result';
@@ -69,23 +67,26 @@ sub remove_async_test_bucket {
     my $remove_all_and_wait;
     $remove_all_and_wait = sub {
         my $t;
-        $bucket->remove_all(sub {
-            $t = AE::timer 1, 0, sub {
-                $bucket->list_keys(
-                    sub {
-                        my ($keys) = @_;
+        $bucket->remove_all({
+            error_cb => $error_cb,
+            cb       => sub {
+                $t = AE::timer 1, 0, sub {
+                    $bucket->list_keys({
+                        error_cb => $error_cb,
+                        cb       => sub {
+                            my ($keys) = @_;
 
-                        if ($keys && @{ $keys }) {
-                            $remove_all_and_wait->();
-                            return;
-                        }
+                            if ($keys && @{ $keys }) {
+                                $remove_all_and_wait->();
+                                return;
+                            }
 
-                        $cb->();
-                    },
-                    $error_cb,
-                );
+                            $cb->();
+                        },
+                    });
+                };
             },
-        }, $error_cb);
+        });
     };
 
     $remove_all_and_wait->();

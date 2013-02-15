@@ -17,10 +17,10 @@ my $riak = Data::Riak::Async->new({
 });
 
 my $cv = AE::cv;
-$riak->status(
-    sub { $cv->send(@_) },
-    sub { $cv->croak(@_) },
-);
+$riak->status({
+    cb       => sub { $cv->send(@_) },
+    error_cb => sub { $cv->croak(@_) },
+});
 
 is ref $cv->recv, 'HASH';
 

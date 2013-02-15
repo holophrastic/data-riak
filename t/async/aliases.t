@@ -35,10 +35,10 @@ my $bucket2 = Data::Riak::Async::Bucket->new({
     my $get_cbs = sub {
         my $cv = AE::cv;
         push @cvs, $cv;
-        (sub { $cv->send(@_) }, sub { $cv->croak(@_) });
+        (cb => sub { $cv->send(@_) }, error_cb => sub { $cv->croak(@_) });
     };
 
-    $_->count($get_cbs->()) for $bucket, $bucket2;
+    $_->count({ $get_cbs->() }) for $bucket, $bucket2;
     is $_, 0, 'No keys in the bucket'
         for map { $_->recv } @cvs;
 }
@@ -79,24 +79,20 @@ my $foo_user_data = '{"username":"foo","email":"foo@example.com"';
 }
 
 {
-    my $cv = AE::cv;
-    $bucket->get('123456', {
-        cb       => sub { $cv->send(@_) },
-        error_cb => sub { $cv->croak(@_) },
-    });
 
     my @cvs;
     my $get_cbs = sub {
         my $cv = AE::cv;
         push @cvs, $cv;
-        (sub { $cv->send(@_) }, sub { $cv->croak(@_) });
+        (cb => sub { $cv->send(@_) }, error_cb => sub { $cv->croak(@_) });
     };
 
-    $bucket->resolve_alias('foo', $get_cbs->());
-    $bucket2->resolve_alias('foo', $get_cbs->());
+    $bucket->get('123456', { $get_cbs->() });
+    $bucket->resolve_alias('foo', { $get_cbs->() });
+    $bucket2->resolve_alias('foo', { $get_cbs->() });
 
     my ($obj, $resolved_obj, $resolved_across_buckets_obj) =
-        map { $_->recv } $cv, @cvs;
+        map { $_->recv } @cvs;
 
     is $obj->value, $foo_user_data, "Calling for foo's data by ID works";
     is $resolved_obj->value, $foo_user_data,
@@ -111,11 +107,13 @@ sub remove_async_test_bucket {
 
     my ($remove_all_and_wait, $t);
     $remove_all_and_wait = sub {
-        $bucket->remove_all(
-            sub {
+        $bucket->remove_all({
+            error_cb => $error_cb,
+            cb       => sub {
                 $t = AE::timer 1, 0, sub {
-                    $bucket->list_keys(
-                        sub {
+                    $bucket->list_keys({
+                        error_cb => $error_cb,
+                        cb       => sub {
                             my ($keys) = @_;
 
                             if ($keys && @{ $keys }) {
@@ -125,12 +123,10 @@ sub remove_async_test_bucket {
 
                             $cb->();
                         },
-                        $error_cb,
-                    );
+                    });
                 },
             },
-            $error_cb,
-        );
+        });
     };
 
     $remove_all_and_wait->();

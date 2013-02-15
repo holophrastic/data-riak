@@ -59,64 +59,53 @@ sub send_request {
 }
 
 sub ping {
-    my ($self, $cb, $error_cb) = @_;
+    my ($self, $opts) = @_;
 
     $self->send_request({
-        type     => 'Ping',
-        cb       => $cb,
-        error_cb => $error_cb,
+        %{ $opts },
+        type => 'Ping',
     });
 
     return;
 }
 
 sub status {
-    my ($self, $cb, $error_cb) = @_;
+    my ($self, $opts) = @_;
 
     $self->send_request({
-        type     => 'Status',
-        cb       => $cb,
-        error_cb => $error_cb,
+        %{ $opts },
+        type => 'Status',
     });
 
     return;
 }
 
 sub _buckets {
-    my ($self, $cb, $error_cb) = @_;
+    my ($self, $opts) = @_;
 
     $self->send_request({
-        type     => 'ListBuckets',
-        cb       => $cb,
-        error_cb => $error_cb,
+        %{ $opts },
+        type => 'ListBuckets',
     });
 
     return;
 }
 
 sub resolve_link {
-    my ($self, $link, $cb, $error_cb) = @_;
-    $self->bucket( $link->bucket )->get($link->key => {
-        cb       => $cb,
-        error_cb => $error_cb,
-    });
+    my ($self, $link, $opts) = @_;
+    $self->bucket( $link->bucket )->get($link->key => $opts);
 }
-
 
 sub linkwalk {
     my ($self, $args) = @_;
-    my $object   = $args->{object} || confess 'You must have an object to linkwalk';
-    my $bucket   = $args->{bucket} || confess 'You must have a bucket for the original object to linkwalk';
-    my $cb       = $args->{cb} || confess 'You must provide a callback to linkwalk';
-    my $error_cb = $args->{error_cb} || confess 'You must provide an error callback to linkwalk';
+    my $object = delete $args->{object} || confess 'You must have an object to linkwalk';
+    my $bucket = delete $args->{bucket} || confess 'You must have a bucket for the original object to linkwalk';
 
     $self->send_request({
+        %{ $args },
         type        => 'LinkWalk',
         bucket_name => $bucket,
         key         => $object,
-        params      => $args->{params},
-        cb          => $cb,
-        error_cb    => $error_cb,
     });
 
     return;

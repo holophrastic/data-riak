@@ -25,10 +25,10 @@ my $bucket = Data::Riak::Async::Bucket->new({
 
 {
     my $cv = AE::cv;
-    $bucket->count(
-        sub { $cv->send(@_) },
-        sub { $cv->croak(@_) },
-    );
+    $bucket->count({
+        cb       => sub { $cv->send(@_) },
+        error_cb => sub { $cv->croak(@_) },
+    });
 
     is $cv->recv, 0, 'No keys in the bucket';
 }

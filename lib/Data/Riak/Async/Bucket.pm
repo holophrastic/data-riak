@@ -87,20 +87,19 @@ sub get {
 }
 
 sub list_keys {
-    my ($self, $cb, $error_cb) = @_;
+    my ($self, $opts) = @_;
 
     $self->riak->send_request({
+        %{ $opts },
         type        => 'ListBucketKeys',
         bucket_name => $self->name,
-        cb          => $cb,
-        error_cb    => $error_cb,
     });
 
     return;
 }
 
 sub count {
-    my ($self, $cb, $error_cb) = @_;
+    my ($self, $opts) = @_;
 
     my $map_reduce = Data::Riak::Async::MapReduce->new({
         riak   => $self->riak,
@@ -112,8 +111,7 @@ sub count {
     });
 
     $map_reduce->mapreduce(
-        cb             => $cb,
-        error_cb       => $error_cb,
+        %{ $opts },
         retval_mangler => sub {
             my ($map_reduce_results) = @_;
             my ($result) = $map_reduce_results->results->[0];
@@ -126,37 +124,40 @@ sub count {
 }
 
 sub remove_all {
-    my ($self, $cb, $error_cb) = @_;
+    my ($self, $opts) = @_;
 
-    $self->list_keys(sub {
-        my ($keys) = @_;
-        return $cb->() unless ref $keys eq 'ARRAY' && @$keys;
+    my ($cb, $error_cb) = map { $opts->{$_} } qw(cb error_cb);
+    $self->list_keys({
+        error_cb => $error_cb,
+        cb       => sub { # TODO: retval mangler?
+            my ($keys) = @_;
+            return $cb->() unless ref $keys eq 'ARRAY' && @$keys;
 
-        my %keys = map { ($_ => 1) } @{ $keys };
-        for my $key (@{ $keys }) {
-            $self->remove($key, {
-                cb => sub {
-                    delete $keys{$key};
-                    $cb->() if !keys %keys;
-                },
-                error_cb => $error_cb,
-            });
-        }
-    }, $error_cb);
+            my %keys = map { ($_ => 1) } @{ $keys };
+            for my $key (@{ $keys }) {
+                $self->remove($key, {
+                    error_cb => $error_cb,
+                    cb       => sub {
+                        delete $keys{$key};
+                        $cb->() if !keys %keys;
+                    },
+                });
+            }
+        },
+    });
 
     return;
 }
 
 sub linkwalk {
-    my ($self, $object, $params, $cb, $error_cb) = @_;
+    my ($self, $object, $params, $opts) = @_;
     return undef unless $params;
 
     $self->riak->linkwalk({
-        bucket   => $self->name,
-        object   => $object,
-        params   => $params,
-        cb       => $cb,
-        error_cb => $error_cb,
+        %{ $opts },
+        bucket => $self->name,
+        object => $object,
+        params => $params,
     });
 
     return;
@@ -164,10 +165,8 @@ sub linkwalk {
 
 sub search_index {
     my ($self, $opts) = @_;
-    my $field    = $opts->{'field'}  || confess 'You must specify a field for searching Secondary indexes';
-    my $values   = $opts->{'values'} || confess 'You must specify values for searching Secondary indexes';
-    my $cb       = $opts->{cb} || confess 'You must provide a callback to linkwalk';
-    my $error_cb = $opts->{cb} || confess 'You must provide an error callback to linkwalk';
+    my $field  = $opts->{'field'}  || confess 'You must specify a field for searching Secondary indexes';
+    my $values = $opts->{'values'} || confess 'You must specify values for searching Secondary indexes';
 
     my $inputs = { bucket => $self->name, index => $field };
     if(ref($values) eq 'ARRAY') {
@@ -191,8 +190,9 @@ sub search_index {
     });
 
     $search_mr->mapreduce(
-        cb       => sub { $cb->(shift->results->[0]->value) },
-        error_cb => $error_cb,
+        %{ $opts },
+        # TODO: retval mangler
+        cb       => sub { $opts->{cb}->(shift->results->[0]->value) },
     );
 
     return;
@@ -205,34 +205,32 @@ sub pretty_search_index {
 
     $self->search_index({
         %{ $opts },
-        cb => sub {
+        cb => sub { # TODO: retval mangler
             $cb->([sort map { $_->[1] } @{ decode_json shift }]);
         },
     });
 }
 
 sub props {
-    my ($self, $cb, $error_cb) = @_;
+    my ($self, $opts) = @_;
 
     $self->riak->send_request({
+        %{ $opts },
         type        => 'GetBucketProps',
         bucket_name => $self->name,
-        cb          => $cb,
-        error_cb    => $error_cb,
     });
 
     return;
 }
 
 sub set_props {
-    my ($self, $props, $cb, $error_cb) = @_;
+    my ($self, $props, $opts) = @_;
 
     $self->riak->send_request({
+        %{ $opts },
         type        => 'SetBucketProps',
         bucket_name => $self->name,
         props       => $props,
-        cb          => $cb,
-        error_cb    => $error_cb,
     });
 
     return;
@@ -240,33 +238,29 @@ sub set_props {
 
 sub create_alias {
     my ($self, $opts) = @_;
-    my $bucket = $opts->{in} || $self;
+    my $bucket = delete $opts->{in} || $self;
 
-    $bucket->add(
-        $opts->{as}, $opts->{key},
-        {
-            links => [
-                Data::Riak::Link->new(
-                    bucket => $bucket->name,
-                    riaktag => 'perl-data-riak-alias',
-                    key => $opts->{key},
-                ),
-            ],
-            cb       => $opts->{cb},
-            error_cb => $opts->{error_cb},
-        },
-    );
+    $bucket->add($opts->{as}, $opts->{key}, {
+        %{ $opts },
+        links => [
+            Data::Riak::Link->new(
+                bucket => $bucket->name,
+                riaktag => 'perl-data-riak-alias',
+                key => $opts->{key},
+            ),
+        ],
+    });
 
     return;
 }
 
 sub resolve_alias {
-    my ($self, $alias, $cb, $error_cb) = @_;
+    my ($self, $alias, $opts) = @_;
 
-    $self->linkwalk(
-        $alias, [[ 'perl-data-riak-alias', '_' ]],
-        sub { $cb->(shift->first) }, $error_cb,
-    );
+    $self->linkwalk($alias, [[ 'perl-data-riak-alias', '_' ]], {
+        %{ $opts },
+        cb => sub { $opts->{cb}->(shift->first) },
+    });
 
     return;
 }
