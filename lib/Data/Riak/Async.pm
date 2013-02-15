@@ -31,7 +31,7 @@ sub send_request {
             my ($response) = @_;
 
             my @results = $response->create_results($self, $request);
-            return $cb->(undef) unless @results;
+            return $cb->() unless @results;
 
             if (@results == 1 && $results[0]->does('Data::Riak::Result::Single')) {
                 return $cb->($request->_mangle_retval($results[0]));
