@@ -130,7 +130,6 @@ sub count {
 
 sub linkwalk {
     my ($self, $object, $params, $opts) = @_;
-    return undef unless $params; # TODO: needs to go. breaks async
 
     return $self->riak->linkwalk({
         %{ $opts || {} },

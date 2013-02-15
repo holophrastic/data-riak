@@ -169,7 +169,6 @@ See L<Data::Riak/LINKWALKING>.
 
 sub linkwalk {
     my ($self, $params, $cb, $error_cb) = @_;
-    return undef unless $params;
     return $self->riak->linkwalk({
         bucket   => $self->bucket_name,
         object   => $self->key,
