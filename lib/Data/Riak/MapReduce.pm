@@ -1,19 +1,13 @@
 package Data::Riak::MapReduce;
-
-use strict;
-use warnings;
-
 # ABSTRACT: A map/reduce query
 
 use Moose;
 use Data::Riak::MapReduce::Phase::Link;
 use Data::Riak::MapReduce::Phase::Map;
 use Data::Riak::MapReduce::Phase::Reduce;
-
 use namespace::autoclean;
 
-with 'Data::Riak::Role::HasRiak',
-     'Data::Riak::Role::MapReduce';
+with 'Data::Riak::Role::HasRiak';
 
 =head1 DESCRIPTION
 
@@ -82,11 +76,27 @@ And finally:
 
   inputs => [ [ "bucketname", "keyname", "keyData" ] ]
 
+=cut
+
+has inputs => (
+    is       => 'ro',
+    isa      => 'ArrayRef | Str | HashRef',
+    required => 1
+);
+
 =attr phases
 
 An arrayref of phases that will be executed in order.  The phases should be
 one of L<Data::Riak::MapReduce::Phase::Link>,
 L<Data::Riak::MapReduce::Phase::Map>, or L<Data::Riak::MapReduce::Phase::Reduce>.
+
+=cut
+
+has phases => (
+    is       => 'ro',
+    isa      => 'ArrayRef[Data::Riak::MapReduce::Phase]',
+    required => 1
+);
 
 =method mapreduce
 
@@ -102,17 +112,12 @@ sub mapreduce {
     my ($self, %options) = @_;
 
     return $self->riak->send_request({
+        %options,
         type => 'MapReduce',
         data => {
             inputs => $self->inputs,
-            query => [ map { { $_->phase => $_->pack } } @{ $self->phases } ]
+            query  => [ map { { $_->phase => $_->pack } } @{ $self->phases } ]
         },
-        ($options{'chunked'}
-            ? (chunked => 1)
-            : ()),
-        ($options{retval_mangler}
-            ? (retval_mangler => $options{retval_mangler})
-            : ()),
     });
 }
 

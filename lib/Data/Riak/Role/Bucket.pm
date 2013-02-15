@@ -3,12 +3,11 @@ package Data::Riak::Role::Bucket;
 use Moose::Role;
 use JSON 'decode_json';
 use Data::Riak::Link;
+use Data::Riak::MapReduce;
 use HTTP::Headers::ActionPack::LinkList;
 use namespace::autoclean;
 
 with 'Data::Riak::Role::HasRiak';
-
-sub new_mapreduce { shift->riak->new_mapreduce(@_) }
 
 has name => (
     is       => 'ro',
@@ -109,7 +108,7 @@ sub list_keys {
 sub count {
     my ($self, $opts) = @_;
 
-    my $map_reduce = $self->new_mapreduce({
+    my $map_reduce = Data::Riak::MapReduce->new({
         riak   => $self->riak,
         inputs => $self->name,
         phases => [

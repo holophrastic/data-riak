@@ -70,8 +70,6 @@ sub _build_request_classes {
 
 sub _build_bucket_class { 'Data::Riak::Bucket' }
 
-sub _build_mapreduce_class { 'Data::Riak::MapReduce' }
-
 sub send_request {
     my ($self, $request_data) = @_;
 

@@ -2,7 +2,6 @@ package Data::Riak::Async::Bucket;
 
 use Moose;
 use JSON 'decode_json';
-use Data::Riak::Async::MapReduce;
 use namespace::autoclean;
 
 with 'Data::Riak::Role::Bucket';
@@ -46,7 +45,7 @@ sub search_index {
         $inputs->{'key'} = $values;
     }
 
-    my $search_mr = Data::Riak::Async::MapReduce->new({
+    my $search_mr = Data::Riak::MapReduce->new({
         riak => $self->riak,
         inputs => $inputs,
         phases => [

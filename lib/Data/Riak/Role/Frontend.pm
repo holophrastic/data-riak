@@ -34,15 +34,6 @@ has bucket_class => (
     },
 );
 
-has mapreduce_class => (
-    is      => 'ro',
-    isa     => 'ClassName',
-    builder => '_build_mapreduce_class',
-    handles => {
-        new_mapreduce => 'new',
-    },
-);
-
 sub BUILD {}
 after BUILD => sub {
     my ($self) = @_;
