@@ -101,34 +101,6 @@ Searches a Secondary Index to find results.
 
 =cut
 
-sub search_index {
-    my ($self, $opts) = @_;
-    my $field  = $opts->{'field'}  || confess 'You must specify a field for searching Secondary indexes';
-    my $values = $opts->{'values'} || confess 'You must specify values for searching Secondary indexes';
-
-    my $inputs = { bucket => $self->name, index => $field };
-    if(ref($values) eq 'ARRAY') {
-        $inputs->{'start'} = $values->[0];
-        $inputs->{'end'} = $values->[1];
-    } else {
-        $inputs->{'key'} = $values;
-    }
-
-    my $search_mr = Data::Riak::MapReduce->new({
-        riak => $self->riak,
-        inputs => $inputs,
-        phases => [
-            Data::Riak::MapReduce::Phase::Reduce->new({
-                language => 'erlang',
-                module => 'riak_kv_mapreduce',
-                function => 'reduce_identity',
-                keep => 1
-            })
-        ]
-    });
-    return $search_mr->mapreduce->results->[0]->value;
-}
-
 # returns JUST the list of keys. human readable, not designed for MapReduce inputs.
 sub pretty_search_index {
     my ($self, $opts) = @_;
