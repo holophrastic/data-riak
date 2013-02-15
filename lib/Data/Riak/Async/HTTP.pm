@@ -98,13 +98,13 @@ sub send {
         return $error_cb->($e) if $e;
 
         $cb->($http_response);
-    });
+    }, $error_cb);
 
     return;
 }
 
 sub _send {
-    my ($self, $request, $cb) = @_;
+    my ($self, $request, $cb, $error_cb) = @_;
 
     my $uri = URI->new( sprintf('%s%s', $self->base_uri, $request->uri) );
 
@@ -136,6 +136,12 @@ sub _send {
         $headers,
         $request->data,
     );
+
+    $self->_send_via_anyevent_http($http_request, $cb, $error_cb);
+}
+
+sub _send_via_anyevent_http {
+    my ($self, $http_request, $cb, $error_cb) = @_;
 
     my %plain_headers;
     for my $k ($http_request->headers->header_field_names) {
