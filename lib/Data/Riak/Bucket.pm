@@ -147,14 +147,13 @@ doing.
 
 =cut
 
-
 sub list_keys {
     my $self = shift;
 
     return $self->riak->send_request({
         type        => 'ListBucketKeys',
         bucket_name => $self->name,
-    })->json_value->{keys};
+    });
 }
 
 =method count
@@ -173,12 +172,16 @@ sub count {
         phases => [
             Data::Riak::Util::MapCount->new,
             Data::Riak::Util::ReduceCount->new
-        ]
+        ],
     });
-    my $map_reduce_results = $map_reduce->mapreduce;
-    my ( $result ) = $map_reduce_results->results->[0];
-    my ( $count ) = decode_json($result->value) || 0;
-    return $count->[0];
+    return $map_reduce->mapreduce(
+        retval_mangler => sub {
+            my ($map_reduce_results) = @_;
+            my ($result) = $map_reduce_results->results->[0];
+            my ($count) = decode_json($result->value) || 0;
+            return $count->[0];
+        },
+    );
 }
 
 =method remove_all
@@ -195,19 +198,6 @@ sub remove_all {
     foreach my $key ( @$keys ) {
         $self->remove( $key );
     }
-}
-
-sub create_link {
-    my $self = shift;
-    my %opts = ref $_[0] eq 'HASH' ? %{$_[0]} : @_;
-    confess "You must provide a key for a link" unless exists $opts{key};
-    confess "You must provide a riaktag for a link" unless exists $opts{riaktag};
-    return Data::Riak::Link->new({
-        bucket => $self->name,
-        key => $opts{key},
-        riaktag => $opts{riaktag},
-        (exists $opts{params} ? (params => $opts{params}) : ())
-    });
 }
 
 sub linkwalk {
@@ -266,7 +256,7 @@ sub props {
     return $self->riak->send_request({
         type        => 'GetBucketProps',
         bucket_name => $self->name,
-    })->json_value->{props};
+    });
 }
 
 sub set_props {

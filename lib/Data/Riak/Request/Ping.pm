@@ -20,6 +20,11 @@ sub _build_http_exception_classes {
     };
 }
 
+sub _mangle_retval {
+    my ($self, $res) = @_;
+    $res->status_code == 200 ? 1 : 0
+}
+
 with 'Data::Riak::Request',
      'Data::Riak::Request::WithHTTPExceptionHandling';
 

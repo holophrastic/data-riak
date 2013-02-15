@@ -92,7 +92,7 @@ sub list_keys {
     $self->riak->send_request({
         type        => 'ListBucketKeys',
         bucket_name => $self->name,
-        cb          => sub { $cb->(shift->json_value->{keys}) },
+        cb          => $cb,
         error_cb    => $error_cb,
     });
 
@@ -112,13 +112,14 @@ sub count {
     });
 
     $map_reduce->mapreduce(
-        cb => sub {
+        cb             => $cb,
+        error_cb       => $error_cb,
+        retval_mangler => sub {
             my ($map_reduce_results) = @_;
             my ($result) = $map_reduce_results->results->[0];
             my ($count) = decode_json($result->value) || 0;
-            $cb->($count->[0]);
+            return $count->[0];
         },
-        error_cb => $error_cb,
     );
 
     return;
@@ -216,7 +217,7 @@ sub props {
     $self->riak->send_request({
         type        => 'GetBucketProps',
         bucket_name => $self->name,
-        cb          => sub { $cb->(shift->json_value->{props}) },
+        cb          => $cb,
         error_cb    => $error_cb,
     });
 

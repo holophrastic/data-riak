@@ -45,10 +45,12 @@ sub send_request {
             return $cb->(undef) unless @results;
 
             if (@results == 1 && $results[0]->does('Data::Riak::Result::Single')) {
-                return $cb->($results[0]);
+                return $cb->($request->_mangle_retval($results[0]));
             }
 
-            $cb->(Data::Riak::ResultSet->new({ results => \@results }));
+            $cb->($request->_mangle_retval(
+                Data::Riak::ResultSet->new({ results => \@results }),
+            ));
         },
         $request->error_cb,
     );
@@ -61,7 +63,7 @@ sub ping {
 
     $self->send_request({
         type     => 'Ping',
-        cb       => sub { $cb->(shift->status_code == 200 ? 1 : 0) },
+        cb       => $cb,
         error_cb => $error_cb,
     });
 
@@ -73,7 +75,7 @@ sub status {
 
     $self->send_request({
         type     => 'Status',
-        cb       => sub { $cb->(shift->json_value) },
+        cb       => $cb,
         error_cb => $error_cb,
     });
 
@@ -85,7 +87,7 @@ sub _buckets {
 
     $self->send_request({
         type     => 'ListBuckets',
-        cb       => sub { $cb->(shift->json_value->{buckets}) },
+        cb       => $cb,
         error_cb => $error_cb,
     });
 

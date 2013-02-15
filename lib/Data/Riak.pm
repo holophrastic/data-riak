@@ -89,10 +89,10 @@ sub send_request {
     return unless @results;
 
     if (@results == 1 && $results[0]->does('Data::Riak::Result::Single')) {
-        return $results[0];
+        return $request->_mangle_retval($results[0]);
     }
 
-    return Data::Riak::ResultSet->new({ results => \@results });
+    return $request->_mangle_retval(Data::Riak::ResultSet->new({ results => \@results }));
 }
 
 =method ping
@@ -104,7 +104,7 @@ yes.
 
 sub ping {
     my ($self) = @_;
-    return $self->send_request({ type => 'Ping' })->status_code == 200 ? 1 : 0;
+    return $self->send_request({ type => 'Ping' });
 }
 
 =method status
@@ -118,7 +118,7 @@ information could not be retrieved.
 
 sub status {
     my ($self) = @_;
-    return $self->send_request({ type => 'Status' })->json_value;
+    return $self->send_request({ type => 'Status' });
 }
 
 =method _buckets
@@ -133,7 +133,7 @@ sub _buckets {
     my $self = shift;
     return $self->send_request({
         type => 'ListBuckets',
-    })->json_value->{buckets};
+    });
 }
 
 =method bucket ($name)

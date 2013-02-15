@@ -93,4 +93,17 @@ This method is required to return constructor arguments for L<HTTP::Request>.
 
 requires qw(as_http_request_args);
 
+has retval_mangler => (
+    is      => 'ro',
+    isa     => 'CodeRef',
+    default => sub {
+        sub { $_[0] };
+    },
+);
+
+sub _mangle_retval {
+    my ($self, $ret) = @_;
+    $self->retval_mangler->($_[1]);
+}
+
 1;

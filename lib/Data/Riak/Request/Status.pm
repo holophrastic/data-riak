@@ -21,6 +21,11 @@ sub _build_http_exception_classes {
     };
 }
 
+sub _mangle_retval {
+    my ($self, $ret) = @_;
+    return $ret->json_value;
+}
+
 with 'Data::Riak::Request',
      'Data::Riak::Request::WithHTTPExceptionHandling';
 

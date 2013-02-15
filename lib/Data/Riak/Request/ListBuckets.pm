@@ -15,6 +15,11 @@ sub as_http_request_args {
     };
 }
 
+sub _mangle_retval {
+    my ($self, $ret) = @_;
+    $ret->json_value->{buckets};
+}
+
 with 'Data::Riak::Request';
 
 has '+result_class' => (

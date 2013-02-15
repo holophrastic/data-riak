@@ -110,6 +110,9 @@ sub mapreduce {
         ($options{'chunked'}
             ? (chunked => 1)
             : ()),
+        ($options{retval_mangler}
+            ? (retval_mangler => $options{retval_mangler})
+            : ()),
     });
 }
 

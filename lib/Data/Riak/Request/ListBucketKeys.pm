@@ -18,6 +18,11 @@ sub as_http_request_args {
     };
 }
 
+sub _mangle_retval {
+    my ($self, $ret) = @_;
+    $ret->json_value->{keys};
+}
+
 with 'Data::Riak::Request::WithBucket';
 
 has '+result_class' => (
