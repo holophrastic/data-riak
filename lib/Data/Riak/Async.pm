@@ -7,17 +7,6 @@ use namespace::autoclean;
 
 with 'Data::Riak::Role::Frontend';
 
-# FIXME: factor out stuff til ping
-
-has transport => (
-    is       => 'ro',
-    isa      => 'Data::Riak::Async::HTTP',
-    required => 1,
-    handles  => {
-        'base_uri' => 'base_uri'
-    }
-);
-
 sub _build_request_classes {
     return +{
         (map {

@@ -4,6 +4,15 @@ use Moose::Role;
 use Class::Load 'load_class';
 use namespace::autoclean;
 
+has transport => (
+    is       => 'ro',
+    does     => 'Data::Riak::Transport',
+    required => 1,
+    handles  => {
+        base_uri => 'base_uri'
+    }
+);
+
 has request_classes => (
     traits  => ['Hash'],
     is      => 'ro',

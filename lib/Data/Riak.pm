@@ -58,15 +58,6 @@ Riak. Currently, the only existing transport is L<Data::Riak::HTTP>.
 
 =cut
 
-has transport => (
-    is       => 'ro',
-    does     => 'Data::Riak::Transport',
-    required => 1,
-    handles  => {
-        'base_uri' => 'base_uri'
-    }
-);
-
 sub _build_request_classes {
     return +{
         (map {
