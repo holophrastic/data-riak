@@ -19,7 +19,8 @@ use JSON::XS qw/decode_json encode_json/;
 
 use namespace::autoclean;
 
-with 'Data::Riak::Role::HasRiak';
+with 'Data::Riak::Role::HasRiak',
+     'Data::Riak::Role::Bucket';
 
 =head1 DESCRIPTION
 
@@ -54,14 +55,6 @@ happen here.
     my $resultset = $bucket->linkwalk('baz', [[ 'buddy', '_' ]]);
     my $value = $resultset->first->value;   # Will be "bar", the value of foo
 
-=cut
-
-has name => (
-    is => 'ro',
-    isa => 'Str',
-    required => 1
-);
-
 =method add ($key, $value, $opts)
 
 This will insert a key C<$key> into the bucket, with value C<$value>. The C<$opts>
@@ -74,17 +67,7 @@ sub add {
 
     $opts ||= {};
 
-    my $pack = HTTP::Headers::ActionPack::LinkList->new;
-    if($opts->{'links'}) {
-        foreach my $link (@{$opts->{'links'}}) {
-            if(blessed $link && $link->isa('Data::Riak::Link')) {
-                $pack->add($link->as_link_header);
-            }
-            else {
-                confess "Bad link type ($link)";
-            }
-        }
-    }
+    my $pack = $self->_build_linklist($opts->{links});
 
     # TODO:
     # need to support other headers

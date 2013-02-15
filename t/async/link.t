@@ -66,28 +66,26 @@ isa_ok $link, 'Data::Riak::Link';
 sub remove_async_test_bucket {
     my ($bucket, $cb, $error_cb) = @_;
 
-    my ($remove_all_and_wait, $t);
+    my $remove_all_and_wait;
     $remove_all_and_wait = sub {
-        $bucket->remove_all(
-            sub {
-                $t = AE::timer 1, 0, sub {
-                    $bucket->list_keys(
-                        sub {
-                            my ($keys) = @_;
+        my $t;
+        $bucket->remove_all(sub {
+            $t = AE::timer 1, 0, sub {
+                $bucket->list_keys(
+                    sub {
+                        my ($keys) = @_;
 
-                            if ($keys && @{ $keys }) {
-                                $remove_all_and_wait->();
-                                return;
-                            }
+                        if ($keys && @{ $keys }) {
+                            $remove_all_and_wait->();
+                            return;
+                        }
 
-                            $cb->();
-                        },
-                        $error_cb,
-                    );
-                },
+                        $cb->();
+                    },
+                    $error_cb,
+                );
             },
-            $error_cb,
-        );
+        }, $error_cb);
     };
 
     $remove_all_and_wait->();
@@ -104,7 +102,6 @@ sub remove_async_test_bucket {
     try {
         $cv->recv;
     } catch {
-        diag explain $_;
         isa_ok $_, 'Data::Riak::Exception';
     };
 }

@@ -6,19 +6,8 @@ use Data::Riak::MapReduce::Phase::Map;
 use Data::Riak::MapReduce::Phase::Reduce;
 use namespace::autoclean;
 
-with 'Data::Riak::Role::HasRiak';
-
-has inputs => (
-    is => 'ro',
-    isa => 'ArrayRef | Str | HashRef',
-    required => 1
-);
-
-has phases => (
-    is => 'ro',
-    isa => 'ArrayRef[Data::Riak::MapReduce::Phase]',
-    required => 1
-);
+with 'Data::Riak::Role::HasRiak',
+     'Data::Riak::Role::MapReduce';
 
 sub mapreduce {
     my ($self, %options) = @_;

@@ -3,7 +3,6 @@ package Data::Riak::Async;
 use Moose;
 use Data::Riak::Async::HTTP;
 use Data::Riak::Async::Bucket;
-use Class::Load 'load_class';
 use namespace::autoclean;
 
 with 'Data::Riak::Role::Frontend';
@@ -19,18 +18,6 @@ has transport => (
     }
 );
 
-has request_classes => (
-    traits  => ['Hash'],
-    is      => 'ro',
-    isa     => 'HashRef[Str]',
-    builder => '_build_request_classes',
-    handles => {
-        _available_request_classes => 'values',
-        request_class_for          => 'get',
-        has_request_class_for      => 'exists',
-    },
-);
-
 sub _build_request_classes {
     return +{
         (map {
@@ -41,24 +28,7 @@ sub _build_request_classes {
     }
 }
 
-sub BUILD {
-    my ($self) = @_;
-
-    load_class $_
-        for $self->_available_request_classes;
-}
-
-sub _create_request {
-    my ($self, $args) = @_;
-
-    my %args_copy = %{ $args };
-    my $type = delete $args_copy{type};
-
-    confess sprintf 'Unknown request class %s', $type
-        unless $self->has_request_class_for($type);
-
-    return $self->request_class_for($type)->new(\%args_copy);
-}
+sub _build_bucket_class { 'Data::Riak::Async::Bucket' }
 
 sub send_request {
     my ($self, $request_data) = @_;
@@ -120,15 +90,6 @@ sub _buckets {
     });
 
     return;
-}
-
-
-sub bucket {
-    my ($self, $bucket_name) = @_;
-    return Data::Riak::Async::Bucket->new({
-        riak => $self,
-        name => $bucket_name,
-    });
 }
 
 sub resolve_link {

@@ -12,7 +12,8 @@ use Data::Riak::MapReduce::Phase::Reduce;
 
 use namespace::autoclean;
 
-with 'Data::Riak::Role::HasRiak';
+with 'Data::Riak::Role::HasRiak',
+     'Data::Riak::Role::MapReduce';
 
 =head1 DESCRIPTION
 
@@ -81,27 +82,11 @@ And finally:
 
   inputs => [ [ "bucketname", "keyname", "keyData" ] ]
 
-=cut
-
-has inputs => (
-    is => 'ro',
-    isa => 'ArrayRef | Str | HashRef',
-    required => 1
-);
-
 =attr phases
 
 An arrayref of phases that will be executed in order.  The phases should be
 one of L<Data::Riak::MapReduce::Phase::Link>,
 L<Data::Riak::MapReduce::Phase::Map>, or L<Data::Riak::MapReduce::Phase::Reduce>.
-
-=cut
-
-has phases => (
-    is => 'ro',
-    isa => 'ArrayRef[Data::Riak::MapReduce::Phase]',
-    required => 1
-);
 
 =method mapreduce
 

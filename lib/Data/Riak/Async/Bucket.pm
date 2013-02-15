@@ -5,13 +5,8 @@ use JSON 'decode_json';
 use Data::Riak::Async::MapReduce;
 use namespace::autoclean;
 
-with 'Data::Riak::Role::HasRiak';
-
-has name => (
-    is => 'ro',
-    isa => 'Str',
-    required => 1
-);
+with 'Data::Riak::Role::HasRiak',
+     'Data::Riak::Role::Bucket';
 
 sub add {
     my ($self, $key, $value, $opts) = @_;
@@ -21,18 +16,7 @@ sub add {
     confess 'you need to provide an error callback'
         if !$opts || !exists $opts->{error_cb};
 
-    # FIXME: factor out and reuse from Bucket
-    my $pack = HTTP::Headers::ActionPack::LinkList->new;
-    if($opts->{'links'}) {
-        foreach my $link (@{$opts->{'links'}}) {
-            if(blessed $link && $link->isa('Data::Riak::Link')) {
-                $pack->add($link->as_link_header);
-            }
-            else {
-                confess "Bad link type ($link)";
-            }
-        }
-    }
+    my $pack = $self->_build_linklist($opts->{links});
 
     $self->riak->send_request({
         cb          => $opts->{cb},
@@ -160,19 +144,6 @@ sub remove_all {
     }, $error_cb);
 
     return;
-}
-
-sub create_link {
-    my $self = shift;
-    my %opts = ref $_[0] eq 'HASH' ? %{$_[0]} : @_;
-    confess "You must provide a key for a link" unless exists $opts{key};
-    confess "You must provide a riaktag for a link" unless exists $opts{riaktag};
-    return Data::Riak::Link->new({
-        bucket => $self->name,
-        key => $opts{key},
-        riaktag => $opts{riaktag},
-        (exists $opts{params} ? (params => $opts{params}) : ())
-    });
 }
 
 sub linkwalk {
