@@ -22,6 +22,12 @@ has port => (
     required => 1,
 );
 
+has timeout => (
+    is      => 'ro',
+    isa     => 'Int',
+    default => 15,
+);
+
 sub send {
     my ($self, $request, $cb, $error_cb) = @_;
 
@@ -89,9 +95,11 @@ sub _send_via_anyevent_http {
         $plain_headers{$normalised} = $http_request->headers->header($k);
     }
 
-    # TODO: timeout
     http_request $http_request->method, $http_request->uri,
-        headers => \%plain_headers, body => $http_request->content, sub {
+        timeout => $self->timeout,
+        headers => \%plain_headers,
+        body    => $http_request->content,
+        sub {
             my ($body, $hdr) = @_;
 
             my $http_response = HTTP::Response->new(

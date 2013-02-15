@@ -5,7 +5,7 @@ use namespace::autoclean;
 
 with 'Data::Riak::Transport';
 
-requires qw(host port);
+requires qw(host port timeout);
 
 has client_id => (
     is      => 'ro',
