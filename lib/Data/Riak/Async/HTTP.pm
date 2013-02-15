@@ -36,8 +36,6 @@ sub send {
     $self->_send($http_request, sub {
         my ($http_response) = @_;
 
-        # FIXME: don't croak in event loop. signal exception through user
-        #        callback
         my $e = $self->exception_handler->try_build_exception(
             $request, $http_request, $http_response,
         );
