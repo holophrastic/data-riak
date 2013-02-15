@@ -2,6 +2,12 @@ package Data::Riak::Async::HTTP;
 
 use Moose;
 use AnyEvent::HTTP;
+use HTTP::Headers;
+use HTTP::Request;
+use HTTP::Response;
+use Data::Riak::HTTP::Request;
+use Data::Riak::HTTP::Response;
+use Data::Riak::HTTP::ExceptionHandler::Default;
 use namespace::autoclean;
 
 has host => (
