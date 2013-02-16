@@ -13,4 +13,13 @@ sub throw {
     });
 }
 
+sub new_exception {
+    my ($factory, $exception) = @_;
+
+    HTTP::Throwable::Factory->new_exception({
+        status_code => $exception->transport_response->code,
+        reason      => $exception->message,
+    });
+}
+
 1;
