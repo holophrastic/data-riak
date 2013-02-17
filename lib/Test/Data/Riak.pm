@@ -3,6 +3,7 @@ package Test::Data::Riak;
 use strict;
 use warnings;
 
+use AnyEvent;
 use Try::Tiny;
 use Test::More;
 use Digest::MD5 qw/md5_hex/;
@@ -94,12 +95,17 @@ sub _build_skip_unless_leveldb_backend {
     sub { skip_unless_leveldb_backend($col->{transport}, @_) };
 }
 
+sub _build_remove_test_bucket {
+    my ($class, $name, $args, $col) = @_;
+    sub { remove_test_bucket($col->{async_transport}, @_) };
+}
+
 my $import = Sub::Exporter::build_exporter({
     exports    => [
         riak_transport_args         => \&_build_riak_transport_args,
         riak_transport              => \&_build_riak_transport,
         async_riak_transport        => \&_build_async_riak_transport,
-        remove_test_bucket          => sub { \&remove_test_bucket },
+        remove_test_bucket          => \&_build_remove_test_bucket,
         create_test_bucket_name     => sub { \&create_test_bucket_name },
         skip_unless_riak            => \&_build_skip_unless_riak,
         skip_unless_leveldb_backend => \&_build_skip_unless_leveldb_backend,
@@ -160,20 +166,64 @@ sub skip_unless_leveldb_backend {
 }
 
 sub remove_test_bucket {
-    my $bucket = shift;
+    my $async_transport = shift;
+    my @buckets = map {
+        $_->isa('Data::Riak::Async::Bucket')
+            ? $_ : Data::Riak::Async::Bucket->new({
+                riak => $async_transport,
+                name => $_->name,
+            });
+    } @_;
 
-    try {
-        $bucket->remove_all;
-        Test::More::diag "Removing test bucket so sleeping for a moment to allow riak to eventually be consistent ..."
-              if $ENV{HARNESS_IS_VERBOSE};
-        my $keys = $bucket->list_keys;
-        while ( $keys && @$keys ) {
-            $bucket->remove_all;
-            sleep(1);
-            $keys = $bucket->list_keys;
-        }
-    } catch {
-        isa_ok $_, 'Data::Riak::Exception';
-    };
+    my @cvs = map { AE::cv } @buckets;
+
+    diag 'Removing test bucket so sleeping for a moment to allow riak to eventually be consistent ...'
+        if $ENV{HARNESS_IS_VERBOSE};
+
+    for my $i (0 .. $#buckets) {
+        _remove_test_bucket_async(
+            $buckets[$i],
+            sub { $cvs[$i]->send },
+            sub { $cvs[$i]->croak(@_) },
+        );
+    }
+
+    for my $cv (@cvs) {
+        try {
+            $cv->recv;
+        } catch {
+            isa_ok $_, 'Data::Riak::Exception';
+        };
+    }
 }
 
+
+sub _remove_test_bucket_async {
+    my ($bucket, $cb, $error_cb) = @_;
+
+    my ($remove_all_and_wait, $t);
+    $remove_all_and_wait = sub {
+        $bucket->remove_all({
+            error_cb => $error_cb,
+            cb       => sub {
+                $t = AE::timer 1, 0, sub {
+                    $bucket->list_keys({
+                        error_cb => $error_cb,
+                        cb       => sub {
+                            my ($keys) = @_;
+
+                            if ($keys && @{ $keys }) {
+                                $remove_all_and_wait->();
+                                return;
+                            }
+
+                            $cb->();
+                        },
+                    });
+                },
+            },
+        });
+    };
+
+    $remove_all_and_wait->();
+}
