@@ -137,4 +137,6 @@ my $baz_user_data = '{"username":"baz","email":"baz@example.net","name_first":"B
         '... last name search returns the expected results';
 }
 
+remove_test_bucket($bucket);
+
 done_testing;
