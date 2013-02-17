@@ -11,6 +11,8 @@ use Sub::Exporter;
 
 use Data::Riak;
 use Data::Riak::HTTP;
+use Data::Riak::Async;
+use Data::Riak::Async::HTTP;
 use namespace::clean;
 
 sub _env_key {
@@ -57,9 +59,14 @@ sub _build_transport_args {
 
 sub _build_transport {
     my $args = _build_transport_args(@_);
-    ($args, Data::Riak->new({
-        transport => Data::Riak::HTTP->new($args),
-    }));
+    ($args,
+     Data::Riak->new({
+         transport => Data::Riak::HTTP->new($args),
+     }),
+     Data::Riak::Async->new({
+         transport => Data::Riak::Async::HTTP->new($args),
+     }),
+    );
 }
 
 sub _build_riak_transport_args {
@@ -70,6 +77,11 @@ sub _build_riak_transport_args {
 sub _build_riak_transport {
     my ($class, $name, $args, $col) = @_;
     sub { $col->{transport} };
+}
+
+sub _build_async_riak_transport {
+    my ($class, $name, $args, $col) = @_;
+    sub { $col->{async_transport} };
 }
 
 sub _build_skip_unless_riak {
@@ -86,28 +98,34 @@ my $import = Sub::Exporter::build_exporter({
     exports    => [
         riak_transport_args         => \&_build_riak_transport_args,
         riak_transport              => \&_build_riak_transport,
+        async_riak_transport        => \&_build_async_riak_transport,
         remove_test_bucket          => sub { \&remove_test_bucket },
         create_test_bucket_name     => sub { \&create_test_bucket_name },
         skip_unless_riak            => \&_build_skip_unless_riak,
         skip_unless_leveldb_backend => \&_build_skip_unless_leveldb_backend,
     ],
     groups     => {
-        default => [qw(riak_transport riak_transport_args remove_test_bucket
-                       create_test_bucket_name skip_unless_riak
-                       skip_unless_leveldb_backend)],
+        default => [qw(riak_transport async_riak_transport riak_transport_args
+                       remove_test_bucket create_test_bucket_name
+                       skip_unless_riak skip_unless_leveldb_backend)],
     },
-    collectors => ['transport', 'transport_args'],
+    collectors => [qw(transport async_transport transport_args)],
     into_level => 1,
 });
 
 sub import {
     my ($class, @args) = @_;
-    my $transport_args = ref $args[0] eq 'HASH' ? shift @args : {};
-    my ($computed_transport_args, $transport) = _build_transport($transport_args);
-    $import->($class,
-              transport      => $transport,
-              transport_args => $computed_transport_args,
-              @args ? @args : '-default');
+
+    my ($transport_args, $transport, $async_transport) =
+        _build_transport(ref $args[0] eq 'HASH' ? shift @args : {});
+
+    $import->(
+        $class,
+        transport       => $transport,
+        async_transport => $async_transport,
+        transport_args  => $transport_args,
+        @args ? @args : '-default',
+    );
 }
 
 sub create_test_bucket_name {
