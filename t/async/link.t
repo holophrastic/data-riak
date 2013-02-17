@@ -14,10 +14,7 @@ use AnyEvent;
 use Data::Riak::Async;
 use Data::Riak::Async::Bucket;
 
-
-my $riak = Data::Riak::Async->new({
-    transport => Data::Riak::Async::HTTP->new(riak_transport_args),
-});
+my $riak = async_riak_transport;
 
 my $bucket_name = create_test_bucket_name;
 my $bucket = $riak->bucket( $bucket_name );

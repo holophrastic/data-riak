@@ -10,9 +10,7 @@ BEGIN {
     skip_unless_riak;
 }
 
-my $t = Data::Riak::Async::HTTP->new(riak_transport_args);
-
-my $riak = Data::Riak::Async->new({ transport => $t });
+my $riak = async_riak_transport;
 
 my $cv = AE::cv;
 $riak->ping({

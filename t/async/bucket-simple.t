@@ -16,9 +16,7 @@ use Data::Riak::Async::Bucket;
 
 skip_unless_riak;
 
-my $riak = Data::Riak::Async->new({
-    transport => Data::Riak::Async::HTTP->new(riak_transport_args),
-});
+my $riak = async_riak_transport;
 
 my $bucket_name = create_test_bucket_name;
 

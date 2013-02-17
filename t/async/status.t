@@ -12,9 +12,7 @@ use AnyEvent;
 use Data::Riak::Async;
 use Data::Riak::Async::HTTP;
 
-my $riak = Data::Riak::Async->new({
-    transport => Data::Riak::Async::HTTP->new(riak_transport_args),
-});
+my $riak = async_riak_transport;
 
 my $cv = AE::cv;
 $riak->status({
