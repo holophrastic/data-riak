@@ -270,44 +270,6 @@ is $obj->bucket_name, $bucket_name, 'Bucket name property is inflated correctly'
        '_buckets lists our new bucket';
 }
 
-{
-    diag 'Removing test bucket so sleeping for a moment to allow riak to eventually be consistent ...'
-        if $ENV{HARNESS_IS_VERBOSE};
-
-    my $cv = AE::cv;
-
-    my ($remove_all_and_wait, $t);
-    $remove_all_and_wait = sub {
-        $bucket->remove_all({
-            error_cb => sub { $cv->croak(@_) },
-            cb       => sub {
-                $t = AE::timer 1, 0, sub {
-                    $bucket->list_keys({
-                        error_cb => sub { $cv->croak(@_) },
-                        cb       => sub {
-                            my ($keys) = @_;
-
-                            if ($keys && @{ $keys }) {
-                                $remove_all_and_wait->();
-                                return;
-                            }
-
-                            $cv->send;
-                        },
-                    });
-                },
-            },
-        });
-    };
-
-    $remove_all_and_wait->();
-
-    try {
-        $cv->recv;
-    } catch {
-        isa_ok $_, 'Data::Riak::Exception';
-    };
-}
-
+remove_test_bucket($bucket);
 
 done_testing;

@@ -58,50 +58,6 @@ isa_ok $link, 'Data::Riak::Link';
     is $result->key, 'foo', '... got the result we expected';
 }
 
-sub remove_async_test_bucket {
-    my ($bucket, $cb, $error_cb) = @_;
-
-    my $remove_all_and_wait;
-    $remove_all_and_wait = sub {
-        my $t;
-        $bucket->remove_all({
-            error_cb => $error_cb,
-            cb       => sub {
-                $t = AE::timer 1, 0, sub {
-                    $bucket->list_keys({
-                        error_cb => $error_cb,
-                        cb       => sub {
-                            my ($keys) = @_;
-
-                            if ($keys && @{ $keys }) {
-                                $remove_all_and_wait->();
-                                return;
-                            }
-
-                            $cb->();
-                        },
-                    });
-                };
-            },
-        });
-    };
-
-    $remove_all_and_wait->();
-}
-
-{
-    my $cv = AE::cv;
-
-    diag 'Removing test bucket so sleeping for a moment to allow riak to eventually be consistent ...'
-        if $ENV{HARNESS_IS_VERBOSE};
-
-    remove_async_test_bucket($bucket, sub { $cv->send }, sub { $cv->croak(@_) });
-
-    try {
-        $cv->recv;
-    } catch {
-        isa_ok $_, 'Data::Riak::Exception';
-    };
-}
+remove_test_bucket($bucket);
 
 done_testing;

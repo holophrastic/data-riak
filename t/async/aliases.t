@@ -100,50 +100,6 @@ my $foo_user_data = '{"username":"foo","email":"foo@example.com"';
 
 }
 
-sub remove_async_test_bucket {
-    my ($bucket, $cb, $error_cb) = @_;
-
-    my ($remove_all_and_wait, $t);
-    $remove_all_and_wait = sub {
-        $bucket->remove_all({
-            error_cb => $error_cb,
-            cb       => sub {
-                $t = AE::timer 1, 0, sub {
-                    $bucket->list_keys({
-                        error_cb => $error_cb,
-                        cb       => sub {
-                            my ($keys) = @_;
-
-                            if ($keys && @{ $keys }) {
-                                $remove_all_and_wait->();
-                                return;
-                            }
-
-                            $cb->();
-                        },
-                    });
-                },
-            },
-        });
-    };
-
-    $remove_all_and_wait->();
-}
-
-{
-    my ($cv, $cv2) = map { AE::cv } 0, 1;
-
-    diag 'Removing test bucket so sleeping for a moment to allow riak to eventually be consistent ...'
-        if $ENV{HARNESS_IS_VERBOSE};
-
-    remove_async_test_bucket($bucket, sub { $cv->send }, sub { $cv->croak(@_) });
-    remove_async_test_bucket($bucket2, sub { $cv2->send }, sub { $cv2->croak(@_) });
-
-    try {
-        $cv->recv; $cv2->recv;
-    } catch {
-        isa_ok $_, 'Data::Riak::Exception';
-    };
-}
+remove_test_bucket($bucket, $bucket2);
 
 done_testing;
