@@ -124,14 +124,15 @@ has user_agent => (
         # - SL
 
         # The Links header Riak returns (esp. for buckets) can get really long,
-        # so here increase the MaxLineLength LWP will accept (default = 8192)
+        # so disable limits LWP puts on the length of response lines
+        # (default = 8192)
         my %opts = @LWP::Protocol::http::EXTRA_SOCK_OPTS;
-        $opts{MaxLineLength} = 65_536;
+        $opts{MaxLineLength} = 0;
         @LWP::Protocol::http::EXTRA_SOCK_OPTS = %opts;
 
         my $ua = LWP::UserAgent->new(
             timeout => $self->timeout,
-            keep_alive => 1
+            keep_alive => 1,
         );
 
         $CONN_CACHE ||= LWP::ConnCache->new;
