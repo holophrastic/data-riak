@@ -24,7 +24,7 @@ The L<Data::Riak::Bucket> this result was retrieved from.
 
 has bucket => (
     is      => 'ro',
-    isa     => 'Data::Riak::Bucket',
+    does    => 'Data::Riak::Role::Bucket',
     lazy    => 1,
     default => sub {
         my $self = shift;
