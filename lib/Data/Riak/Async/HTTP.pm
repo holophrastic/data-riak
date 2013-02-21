@@ -28,6 +28,15 @@ has timeout => (
     default => 15,
 );
 
+has request_arguments => (
+    traits  => ['Hash'],
+    isa     => 'HashRef',
+    default => sub { +{} },
+    handles => {
+        request_arguments => 'elements',
+    },
+);
+
 sub send {
     my ($self, $request, $cb, $error_cb) = @_;
 
@@ -98,6 +107,7 @@ sub _send_via_anyevent_http {
     );
 
     http_request $http_request->method, $http_request->uri,
+        $self->request_arguments,
         timeout => $self->timeout,
         headers => \%plain_headers,
         body    => $http_request->content,
