@@ -87,11 +87,14 @@ sub _send {
 sub _send_via_anyevent_http {
     my ($self, $http_request, $cb, $error_cb) = @_;
 
-    my %plain_headers;
-    for my $k ($http_request->headers->header_field_names) {
-        (my $normalised = $k) =~ s/^://;
-        $plain_headers{$normalised} = $http_request->headers->header($k);
-    }
+    my %plain_headers = (
+        map {
+            (my $normalised = $_) =~ s/^://;
+            # In scalar context ->header will join multiple values for a field
+            # together with a comma and do the appropriate escaping.
+            ($normalised => scalar $http_request->headers->header($_));
+        } $http_request->headers->header_field_names,
+    );
 
     http_request $http_request->method, $http_request->uri,
         timeout => $self->timeout,
