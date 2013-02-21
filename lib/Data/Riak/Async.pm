@@ -1,6 +1,7 @@
 package Data::Riak::Async;
 
 use Moose;
+use Data::Riak::ResultSet;
 use Data::Riak::Async::HTTP;
 use Data::Riak::Async::Bucket;
 use namespace::autoclean;
