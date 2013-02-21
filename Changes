@@ -1,3 +1,8 @@
+1.9  2013-02-21
+
+  - Allow passing extra arguments to AnyEvent::HTTP when using the
+    Async::HTTP transport
+
 1.8  2013-02-21
 
   - Add an experimental and undocumented asynchronous API
