@@ -7,7 +7,7 @@ use namespace::autoclean;
 extends 'Data::Riak::Result';
 with 'Data::Riak::Result::WithLocation',
      'Data::Riak::Result::WithLinks',
-     'Data::Riak::Result::WithVClock';
+     'Data::Riak::Result::MaybeWithVClock';
 
 =head1 DESCRIPTION
 
@@ -20,7 +20,7 @@ roles
 
 =item * L<Data::Riak::Result::WithLinks>
 
-=item * L<Data::Riak::Result::WithVClock>
+=item * L<Data::Riak::Result::MaybeWithVClock>
 
 =back
 
