@@ -1,3 +1,10 @@
+2.0  2013-04-03
+
+  - Remove leftovers of Data::Riak::Result::WithVClock. It's been replaced by
+    Data::Riak::Result::MaybeWithVClock in an earlier release. This makes this
+    distribution installable again if you didn't have an older version of
+    Data-Riak that still contained ::WithVClock installed before.
+
 1.9  2013-02-21
 
   - Allow passing extra arguments to AnyEvent::HTTP when using the
